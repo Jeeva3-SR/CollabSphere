@@ -2,7 +2,7 @@
 
 **CollabSphere** is a dynamic, peer-to-peer project collaboration platform designed to connect individuals with diverse skills and ideas. It empowers users to initiate, discover, and contribute to projects in an open and equitable environment. Think of it as a blend of GitHub's project hosting capabilities with LinkedIn's networking and skill-showcasing aspects, all focused on fostering collaborative creation.
 
-![CollabSphere Mockup/Logo (Consider adding a visual here)](https://via.placeholder.com/800x300.png?text=CollabSphere+Platform+Showcase)
+
 
 ## ✨ Key Features
 
