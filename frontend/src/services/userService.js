@@ -15,13 +15,7 @@ export const getAllUsers = async (params = {}) => {
     return response.data;
 };
 
-// <<< --- ADD THIS FUNCTION --- >>>
-export const uploadUserProfilePicture = async (formData) => {
-  // formData will contain the file (e.g., formData.append('profilePic', file))
-  const response = await api.post('/users/profile/picture', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data', // Crucial for file uploads
-    },
-  });
-  return response.data; // Expected: { message, avatarUrl, user } from backend
+export const deleteAccount = async (passwordData) => {
+  const response = await api.delete('/users/profile/delete', { data: passwordData });
+  return response.data;
 };

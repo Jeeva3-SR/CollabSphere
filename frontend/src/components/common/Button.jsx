@@ -1,10 +1,10 @@
 import React from 'react';
-import RBButton from 'react-bootstrap/Button'; // RB for React-Bootstrap
+import RBButton from 'react-bootstrap/Button'; 
 import Spinner from 'react-bootstrap/Spinner';
 
 const Button = ({
   children,
-  variant = 'primary', // Corresponds to Bootstrap variants
+  variant = 'primary', 
   size, // 'sm', 'lg'
   className = '',
   isLoading = false,
@@ -13,16 +13,13 @@ const Button = ({
   onClick,
   type = 'button',
   disabled = false,
-  as, // For LinkContainer or custom component
-  to, // For LinkContainer
+  as, 
+  to, 
   ...props
 }) => {
-  // Map template variants to Bootstrap if needed
-  // 'secondary' from template (bg-[#dce8f3]) could be 'light' or a custom class
   let bsVariant = variant;
-  if (variant === 'secondary-template') { // Example if template had a distinct 'secondary'
-    bsVariant = 'light'; // Or a custom class
-    // className += ' bg-template-accent text-template-dark';
+  if (variant === 'secondary-template') { 
+    bsVariant = 'light'; 
   }
 
 

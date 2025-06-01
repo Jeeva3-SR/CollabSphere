@@ -20,7 +20,7 @@ const MyProjectsPage = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const projectsPerPage = 6; // Or your preferred number
+  const projectsPerPage = 6;
 
   useEffect(() => {
     const fetchMyProjects = async (page = 1) => {
@@ -34,7 +34,7 @@ const MyProjectsPage = () => {
         const params = {
           page,
           limit: projectsPerPage,
-          listType: 'myCreated' // Use the new listType
+          listType: 'myCreated' 
         };
         const data = await getProjects(params);
         setMyProjects(data.projects);
@@ -59,7 +59,6 @@ const MyProjectsPage = () => {
     }
   };
 
-  // Pagination items logic (can be extracted to a helper)
   let paginationItems = [];
   if (totalPages > 1) {
     paginationItems.push(<Pagination.Prev key="prev" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />);

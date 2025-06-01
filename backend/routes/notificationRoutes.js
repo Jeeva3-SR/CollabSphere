@@ -5,6 +5,6 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/', protect, getNotifications);
-router.put('/read', protect, markNotificationsAsRead); // Can take array of IDs in body or mark all
+router.put('/read', protect, markNotificationsAsRead); 
 
 export default router;

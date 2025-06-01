@@ -24,8 +24,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-const projectOwnerOrAdmin = async (req, res, next) => { // Example for project specific auth
-    // TODO: Implement if needed, e.g., check if req.user.id is project.owner
+const projectOwnerOrAdmin = async (req, res, next) => { 
     next();
 };
 

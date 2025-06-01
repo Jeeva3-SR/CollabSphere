@@ -10,62 +10,11 @@ import Form from 'react-bootstrap/Form';
 import RBButton from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import { XCircleFill, PlusCircleFill, TagFill } from 'react-bootstrap-icons';
-
-import Input from '../components/common/Input'; // Your Bootstrap-styled Input wrapper
-import TextArea from '../components/common/TextArea'; // Your Bootstrap-styled TextArea wrapper
-import SkillSelectionModal from '../components/common/SkillSelectionModal'; // The modal component
-
-// Comprehensive skill options - consider moving to a shared constants file
-const skillOptions = [
-  // Programming Languages
-  { value: 'javascript', label: 'JavaScript' }, { value: 'python', label: 'Python' },
-  { value: 'java', label: 'Java' }, { value: 'csharp', label: 'C#' },
-  { value: 'php', label: 'PHP' }, { value: 'cplusplus', label: 'C++' },
-  { value: 'typescript', label: 'TypeScript' }, { value: 'swift', label: 'Swift' },
-  { value: 'kotlin', label: 'Kotlin' }, { value: 'go', label: 'Go (Golang)' },
-  { value: 'ruby', label: 'Ruby' }, { value: 'scala', label: 'Scala' },
-  { value: 'rust', label: 'Rust' }, { value: 'dart', label: 'Dart' },
-  // Frontend
-  { value: 'html5', label: 'HTML5' }, { value: 'css3', label: 'CSS3' },
-  { value: 'reactjs', label: 'React.js' }, { value: 'angular', label: 'Angular' },
-  { value: 'vuejs', label: 'Vue.js' }, { value: 'svelte', label: 'Svelte' },
-  { value: 'jquery', label: 'jQuery' }, { value: 'bootstrap', label: 'Bootstrap' },
-  { value: 'tailwindcss', label: 'Tailwind CSS' }, { value: 'sass', label: 'Sass/SCSS' },
-  // Backend
-  { value: 'nodejs', label: 'Node.js' }, { value: 'expressjs', label: 'Express.js' },
-  { value: 'django', label: 'Django' }, { value: 'flask', label: 'Flask' },
-  { value: 'rubyonrails', label: 'Ruby on Rails' }, { value: 'springboot', label: 'Spring Boot' },
-  { value: 'laravel', label: 'Laravel' }, { value: 'aspnet', label: 'ASP.NET' },
-  // Databases
-  { value: 'sql', label: 'SQL' }, { value: 'mysql', label: 'MySQL' },
-  { value: 'postgresql', label: 'PostgreSQL' }, { value: 'mongodb', label: 'MongoDB' },
-  { value: 'redis', label: 'Redis' }, { value: 'firebase', label: 'Firebase Realtime/Firestore' },
-  // Mobile Development
-  { value: 'reactnative', label: 'React Native' }, { value: 'flutter', label: 'Flutter' },
-  { value: 'android', label: 'Android (Java/Kotlin)' }, { value: 'ios', label: 'iOS (Swift/Objective-C)' },
-  // DevOps & Cloud
-  { value: 'aws', label: 'AWS' }, { value: 'azure', label: 'Microsoft Azure' },
-  { value: 'gcp', label: 'Google Cloud Platform (GCP)' }, { value: 'docker', label: 'Docker' },
-  { value: 'kubernetes', label: 'Kubernetes' }, { value: 'jenkins', label: 'Jenkins' },
-  { value: 'git', label: 'Git & GitHub/GitLab' }, { value: 'terraform', label: 'Terraform' },
-  // Data Science & ML
-  { value: 'machinelearning', label: 'Machine Learning' }, { value: 'deeplearning', label: 'Deep Learning' },
-  { value: 'datascience', label: 'Data Science' }, { value: 'nlp', label: 'Natural Language Processing (NLP)' },
-  { value: 'computervision', label: 'Computer Vision' }, { value: 'pandas', label: 'Pandas' },
-  { value: 'numpy', label: 'NumPy' }, { value: 'scikitlearn', label: 'Scikit-learn' },
-  { value: 'tensorflow', label: 'TensorFlow' }, { value: 'pytorch', label: 'PyTorch' },
-  // Design & UX
-  { value: 'uidesign', label: 'UI Design' }, { value: 'uxdesign', label: 'UX Design' },
-  { value: 'uxresearch', label: 'UX Research' }, { value: 'figma', label: 'Figma' },
-  { value: 'adobexd', label: 'Adobe XD' }, { value: 'sketch', label: 'Sketch' },
-  { value: 'prototyping', label: 'Prototyping' }, { value: 'graphicdesign', label: 'Graphic Design' },
-  // Others
-  { value: 'projectmanagement', label: 'Project Management' }, { value: 'agile', label: 'Agile Methodologies' },
-  { value: 'technicalwriting', label: 'Technical Writing' }, { value: 'blockchain', label: 'Blockchain' },
-  { value: 'cybersecurity', label: 'Cybersecurity' }, { value: 'testingqa', label: 'Software Testing/QA' },
-];
-
-
+import Input from '../components/common/Input'; 
+import TextArea from '../components/common/TextArea'; 
+import SkillSelectionModal from '../components/common/SkillSelectionModal'; 
+import { skillOptions } from '../utils/constants';
+import AnimatedLogo from '../components/Layout/AnimatedLogo';
 const RegisterPage = () => {
   const { register, loading, error, setError } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -74,7 +23,6 @@ const RegisterPage = () => {
     bio: '', githubLink: '', linkedinLink: '',
   });
   
-  // This state will hold the array of {value, label} skill objects confirmed from the modal
   const [confirmedSkills, setConfirmedSkills] = useState([]);
   const [showSkillModal, setShowSkillModal] = useState(false);
 
@@ -82,12 +30,11 @@ const RegisterPage = () => {
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if(error) setError(null); // Clear previous errors on new input
+    if(error) setError(null); 
   }
 
-  // This function is called by the modal when skills are confirmed
   const handleSkillsUpdateFromModal = (skillsFromModal) => {
-    setConfirmedSkills(skillsFromModal); // skillsFromModal is an array of {value, label}
+    setConfirmedSkills(skillsFromModal);
   };
 
   const removeSkillFromDisplay = (skillValueToRemove) => {
@@ -102,12 +49,12 @@ const RegisterPage = () => {
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters"); setError("Password must be at least 6 characters"); return;
     }
-    // Extract just the 'value' (string) from each confirmed skill object for the backend
+    
     const skillsValueArray = confirmedSkills.map(skill => skill.value);
     
     const result = await register({ 
       name, email, password, bio, 
-      skills: skillsValueArray, // Send array of skill values
+      skills: skillsValueArray, 
       githubLink, linkedinLink 
     });
     
@@ -116,23 +63,37 @@ const RegisterPage = () => {
         navigate('/dashboard');
     } else {
         if(result.error) toast.error(result.error);
-        else if (error) toast.error(error); // Fallback to context error
+        else if (error) toast.error(error); 
     }
   };
   
-  const Logo = () => (
-    <Link to="/" className="navbar-brand d-flex align-items-center gap-2 text-decoration-none text-template-dark">
-      
-        <h2 className="h5 fw-bold mb-0 text-template-dark" style={{letterSpacing: '-0.015em'}}>CollabSphere</h2>
-    </Link>
-  );
+const Logo = ({ user }) => (
+  <Link
+    to={user ? "/dashboard" : "/"}
+    className="navbar-brand d-flex align-items-center gap-2 text-decoration-none"
+  >
+    <AnimatedLogo />
+    <h2
+      className="h5 fw-bold mb-0"
+      style={{
+        letterSpacing: "-0.015em",
+        background:
+          "linear-gradient(90deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+      }}
+    >
+      CollabSphere
+    </h2>
+  </Link>
+);
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-white group-design-root">
         <header className="d-flex align-items-center justify-content-between border-bottom px-md-5 py-3">
             <Logo />
             <div className="d-flex align-items-center ms-auto">
-                <Nav className="d-none d-md-flex gap-4 me-4"> {/* react-bootstrap Nav */}
+                <Nav className="d-none d-md-flex gap-4 me-4">
                     <Nav.Link as={Link} to="/" className="text-template-dark fw-medium">Home</Nav.Link>
                   
                 </Nav>
@@ -142,7 +103,7 @@ const RegisterPage = () => {
 
       <Container className="flex-grow-1 d-flex justify-content-center align-items-center py-5">
         <Row className="justify-content-center w-100">
-          <Col md={8} lg={6} xl={5}> {/* Max width 512px approx */}
+          <Col md={8} lg={6} xl={5}> 
             <h2 className="text-template-dark text-center fw-bold mb-4" style={{fontSize: '28px', letterSpacing: '-0.015em'}}>Create your account</h2>
             <Form onSubmit={onSubmit} noValidate>
               <Input label="Name" name="name" value={name} onChange={onChange} placeholder="Enter your full name" required />
@@ -159,8 +120,7 @@ const RegisterPage = () => {
                   <Input label="LinkedIn link" name="linkedinLink" value={linkedinLink} onChange={onChange} placeholder="https://linkedin.com/in/... (optional)" />
                 </Col>
               </Row>
-              
-              {/* Skills Section with Modal Button */}
+             
               <Form.Group className="mb-3">
                 <Form.Label className="text-template-dark fw-medium d-block mb-1">Skills (optional)</Form.Label>
                 <div className="p-2 border rounded-xl form-control-h14 d-flex align-content-start flex-wrap gap-1 mb-2" style={{ minHeight: '56px', overflowY: 'auto' }}>
@@ -170,7 +130,7 @@ const RegisterPage = () => {
                       pill 
                       bg="primary-subtle" 
                       text="primary-emphasis" 
-                      className="d-flex align-items-center p-2 border border-primary-subtle" // p-2 for slightly larger badge
+                      className="d-flex align-items-center p-2 border border-primary-subtle"
                     >
                       <TagFill size={12} className="me-1"/> {skill.label}
                       <XCircleFill 
@@ -210,9 +170,9 @@ const RegisterPage = () => {
       <SkillSelectionModal
         show={showSkillModal}
         handleClose={() => setShowSkillModal(false)}
-        onSkillsConfirm={handleSkillsUpdateFromModal} // This updates confirmedSkills
-        initialSelectedSkills={confirmedSkills}        // Pass current confirmed skills to modal
-        allSkillOptions={skillOptions}                  // Pass all available skills
+        onSkillsConfirm={handleSkillsUpdateFromModal} 
+        initialSelectedSkills={confirmedSkills}        
+        allSkillOptions={skillOptions}                  
       />
     </div>
   );

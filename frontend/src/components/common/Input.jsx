@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 
 const Input = ({
   label,
-  name, // Use name for controlId, as it's usually unique for the form
+  name, 
   type = 'text',
   value,
   onChange,
@@ -12,13 +12,13 @@ const Input = ({
   className = '',
   inputClassName = '',
   required = false,
-  id, // Accept an id prop
+  id, 
   ...props
 }) => {
-  const controlId = id || name; // Prefer explicit id, fallback to name
+  const controlId = id || name; 
 
   return (
-    <Form.Group className={`mb-3 ${className}`} controlId={controlId}> {/* Use controlId here */}
+    <Form.Group className={`mb-3 ${className}`} controlId={controlId}>
       {label && (
         <Form.Label className="text-template-dark fw-medium">
           {label} {required && <span className="text-danger">*</span>}
@@ -26,8 +26,7 @@ const Input = ({
       )}
       <Form.Control
         type={type}
-        name={name} // Keep name for form submission
-        // id={controlId} // NO LONGER NEEDED HERE - FormGroup handles it via controlId
+        name={name} 
         value={value}
         onChange={onChange}
         placeholder={placeholder}

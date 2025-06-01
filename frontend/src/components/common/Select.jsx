@@ -1,6 +1,6 @@
 import React from 'react';
-import ReactSelect from 'react-select'; // Renamed to avoid conflict
-import Form from 'react-bootstrap/Form'; // For label and potential validation messages
+import ReactSelect from 'react-select'; 
+import Form from 'react-bootstrap/Form'; 
 
 const Select = ({
   label,
@@ -11,8 +11,8 @@ const Select = ({
   placeholder,
   isMulti = false,
   error,
-  className = '', // For the Form.Group wrapper
-  selectClassName = 'multi-select-container', // For react-select wrapper for styling
+  className = '', 
+  selectClassName = 'multi-select-container', 
   required = false,
   ...props
 }) => {
@@ -30,10 +30,10 @@ const Select = ({
         onChange={onChange}
         placeholder={placeholder}
         isMulti={isMulti}
-        className={`${selectClassName} basic-${isMulti ? 'multi-' : ''}select`} // From react-select docs
-        classNamePrefix="react-select" // For styling individual parts
-        isInvalid={!!error} // Custom prop, react-select doesn't have direct isInvalid
-        styles={{ // Basic error styling if needed, though Form.Control.Feedback is separate
+        className={`${selectClassName} basic-${isMulti ? 'multi-' : ''}select`}
+        classNamePrefix="react-select" 
+        isInvalid={!!error}
+        styles={{
             control: (base, state) => ({
                 ...base,
                 borderColor: error ? '#dc3545' : state.isFocused ? '#86b7fe' : '#ced4da',
@@ -41,8 +41,6 @@ const Select = ({
                 '&:hover': {
                     borderColor: error ? '#dc3545' : '#ced4da'
                 },
-                // To match h-14 from template if needed for single select
-                // minHeight: !isMulti ? '56px' : 'auto',
             }),
         }}
         {...props}

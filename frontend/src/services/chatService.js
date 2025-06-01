@@ -2,15 +2,15 @@ import api from './api';
 
 export const getChatRoomForProject = async (projectId) => {
     const response = await api.get(`/chat/room/${projectId}`);
-    return response.data; // { _id, projectId, name, members: [user objects] }
+    return response.data; 
 };
 
-export const getMessagesForChatRoom = async (chatRoomId, params = {}) => { // params for pagination
+export const getMessagesForChatRoom = async (chatRoomId, params = {}) => {
     const response = await api.get(`/chat/messages/${chatRoomId}`, { params });
-    return response.data; // Array of messages, newest first from backend ideally
+    return response.data; 
 };
 
-export const postChatMessage = async (chatRoomId, messageData) => { // messageData: { text: "..." }
+export const postChatMessage = async (chatRoomId, messageData) => { 
     const response = await api.post(`/chat/messages/${chatRoomId}`, messageData);
-    return response.data; // The newly created message object
+    return response.data; 
 };

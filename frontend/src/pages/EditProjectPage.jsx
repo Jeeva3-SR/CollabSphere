@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ProjectForm from '../components/project/ProjectForm'; // Bootstrap-ified form
+import ProjectForm from '../components/project/ProjectForm'; 
 import { getProjectById, updateProject } from '../services/projectService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { toast } from 'react-toastify';
@@ -15,46 +15,58 @@ import { ArrowLeft } from 'react-bootstrap-icons';
 const EditProjectPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); 
   const { user, loading: authLoading } = useContext(AuthContext);
-  const [project, setProject] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // For form submission
-  const [isFetching, setIsFetching] = useState(true); // For initial data fetch
+  const [project, setProject] = useState(null); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!user) return; // Wait for user context
+      if (!user && !authLoading) {
+          toast.warn("Please log in to edit projects.");
+          navigate("/login", { state: { from: location }, replace: true });
+          setIsFetching(false);
+          return;
+      }
+      if (!user) return;
+
       setIsFetching(true);
       try {
         const data = await getProjectById(projectId);
         if (data.owner._id !== user._id) {
           toast.error("You are not authorized to edit this project.");
-          navigate(`/projects/${projectId}`);
+          navigate(`/projects/${projectId}`, { replace: true });
           return;
         }
-        setProject(data);
+        setProject(data); 
       } catch (error) {
         toast.error("Failed to fetch project details for editing.");
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       } finally {
         setIsFetching(false);
       }
     };
 
-    if (!authLoading) { // Only fetch if auth context is resolved
+    if (!authLoading && projectId) { 
         fetchProject();
+    } else if (!authLoading && !projectId) {
+        toast.error("Project ID is missing.");
+        navigate("/dashboard", { replace: true });
+        setIsFetching(false);
     }
-  }, [projectId, user, authLoading, navigate]);
+  }, [projectId, user, authLoading, navigate, location]);
 
-  const handleSubmit = async (projectData) => {
-    setIsLoading(true);
+  const handleSubmit = async (projectDataWithSkills) => {
+    setIsSubmitting(true);
     try {
-      const updated = await updateProject(projectId, projectData);
+      const updated = await updateProject(projectId, projectDataWithSkills);
       toast.success("Project updated successfully!");
       navigate(`/projects/${updated._id}`);
     } catch (error) {
       const message = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || "Failed to update project.";
       toast.error(message);
-      setIsLoading(false);
+      setIsSubmitting(false); 
     }
   };
 
@@ -79,8 +91,8 @@ const EditProjectPage = () => {
                     <ProjectForm
                         onSubmit={handleSubmit}
                         initialData={project}
-                        isLoading={isLoading}
-                        submitButtonText="Save Changes"
+                        isLoading={isSubmitting}
+                        submitButtonText={isSubmitting ? "Saving..." : "Save Changes"}
                     />
                 </Card.Body>
             </Card>

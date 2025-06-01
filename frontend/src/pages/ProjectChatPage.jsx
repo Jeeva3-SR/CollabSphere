@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useRef} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
-// New chat service functions
 import { getChatRoomForProject, getMessagesForChatRoom, postChatMessage } from '../services/chatService'; 
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import UserAvatar from '../components/user/UserAvatar';
 import { toast } from 'react-toastify';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -18,7 +16,6 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { SendFill, PeopleFill, ArrowLeft } from 'react-bootstrap-icons';
 import { formatDistanceToNow } from 'date-fns';
 
-
 const ProjectChatPage = () => {
     const { projectId } = useParams();
     const { user: currentUser } = useContext(AuthContext);
@@ -29,16 +26,14 @@ const ProjectChatPage = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
-    const [onlineUsers, setOnlineUsers] = useState([]); // Map or array of user IDs/names
-    const messagesEndRef = useRef(null); // To scroll to bottom
+    const [onlineUsers, setOnlineUsers] = useState([]); 
+    const messagesEndRef = useRef(null); 
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(scrollToBottom, [messages]); // Scroll when messages change
-
-    // Fetch chat room details and initial messages
+    useEffect(scrollToBottom, [messages]); 
     useEffect(() => {
         if (!projectId || !currentUser?._id) return;
         setLoading(true);
@@ -47,12 +42,11 @@ const ProjectChatPage = () => {
                 const roomData = await getChatRoomForProject(projectId);
                 setChatRoom(roomData);
                 if (roomData?._id) {
-                    const messagesData = await getMessagesForChatRoom(roomData._id); // Add pagination later
-                    setMessages(messagesData.reverse()); // Assuming backend sends newest first
+                    const messagesData = await getMessagesForChatRoom(roomData._id); 
+                    setMessages(messagesData.reverse()); 
                 }
             } catch (error) {
                 toast.error("Failed to load chat room: " + (error.response?.data?.message || error.message));
-                // Handle navigation or error display
             } finally {
                 setLoading(false);
             }
@@ -60,7 +54,7 @@ const ProjectChatPage = () => {
         fetchRoomAndMessages();
     }, [projectId, currentUser]);
 
-    // Socket.IO listeners
+   
     useEffect(() => {
         if (!socket || !chatRoom?._id) return;
 
@@ -69,20 +63,18 @@ const ProjectChatPage = () => {
 
         const handleNewMessage = (message) => {
             console.log("New chat message received via socket:", message);
-            // Ensure sender info is populated if needed, or assume backend does it
             if (message.chatRoomId === chatRoom._id) {
                 setMessages(prevMessages => [...prevMessages, message]);
             }
         };
-        
-        // Listener for users currently in this chat room (backend needs to emit this)
+
         const handleOnlineUsersInRoom = (usersList) => {
             console.log("Online users in room:", usersList);
-            setOnlineUsers(usersList); // Expects an array of user objects/IDs
+            setOnlineUsers(usersList); 
         };
 
         socket.on('newChatMessage', handleNewMessage);
-        socket.on('onlineUsersInRoom', handleOnlineUsersInRoom); // Custom event
+        socket.on('onlineUsersInRoom', handleOnlineUsersInRoom); 
 
         return () => {
             socket.emit('leaveChatRoom', chatRoom._id);
@@ -97,10 +89,8 @@ const ProjectChatPage = () => {
         if (!newMessage.trim() || !chatRoom?._id || !currentUser?._id) return;
         setSending(true);
         try {
-            // The HTTP post will save it, and socket will broadcast to others.
-            // The sender will also receive the broadcast message.
             await postChatMessage(chatRoom._id, { text: newMessage });
-            setNewMessage(''); // Clear input after successful HTTP post
+            setNewMessage('');
         } catch (error) {
             toast.error("Failed to send message: " + (error.response?.data?.message || error.message));
         } finally {
@@ -112,7 +102,7 @@ const ProjectChatPage = () => {
     if (!chatRoom) return <Container className="text-center py-5"><p className="text-danger">Could not load chat room details.</p><Link to={`/projects/${projectId}`}>Back to Project</Link></Container>;
 
     return (
-        <Container fluid="lg" className="py-3 d-flex flex-column" style={{ height: 'calc(100vh - 56px)' }}> {/* Adjust height based on navbar */}
+        <Container fluid="lg" className="py-3 d-flex flex-column" style={{ height: 'calc(100vh - 56px)' }}> 
             <Row className="mb-2 align-items-center">
                 <Col xs="auto">
                     <Link to={`/projects/${projectId}`} className="text-muted"><ArrowLeft size={24} /></Link>
@@ -124,7 +114,6 @@ const ProjectChatPage = () => {
                         {onlineUsers.length > 0 && ` (${onlineUsers.length} online)`}
                     </small>
                 </Col>
-                {/* Optionally show online users list button/modal */}
             </Row>
 
             <Card className="flex-grow-1 d-flex flex-column shadow-sm">

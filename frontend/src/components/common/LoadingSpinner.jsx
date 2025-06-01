@@ -2,20 +2,20 @@ import React from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 
 const LoadingSpinner = ({
-  size = 'md', // 'sm', 'md', 'lg' (Bootstrap doesn't have these exact sizes, 'sm' is available)
-  color = 'primary', // Bootstrap variant color: 'primary', 'secondary', 'success', etc.
+  size = 'md', 
+  color = 'primary',
   className = '',
   style = {},
-  animation = "border", // "border" or "grow"
+  animation = "border",
 }) => {
-  let spinnerSize = size === 'sm' ? 'sm' : undefined; // 'md' and 'lg' are default or require custom CSS
+  let spinnerSize = size === 'sm' ? 'sm' : undefined; 
 
   const customSizeStyle = {};
   if (size === 'md') {
-    customSizeStyle.width = '2rem'; // approx h-8 w-8
+    customSizeStyle.width = '2rem';
     customSizeStyle.height = '2rem';
   } else if (size === 'lg') {
-    customSizeStyle.width = '3rem'; // approx h-12 w-12
+    customSizeStyle.width = '3rem'; 
     customSizeStyle.height = '3rem';
   }
 
@@ -27,7 +27,7 @@ const LoadingSpinner = ({
         role="status"
         variant={color}
         size={spinnerSize}
-        style={{ ...customSizeStyle }} // Apply custom dimensions for md/lg
+        style={{ ...customSizeStyle }} 
       >
         <span className="visually-hidden">Loading...</span>
       </Spinner>

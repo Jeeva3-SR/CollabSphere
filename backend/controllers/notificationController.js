@@ -1,8 +1,6 @@
-// backend/controllers/notificationController.js
 import Notification from '../models/Notification.js';
-import { io, activeUsers } from '../server.js'; // Import io and activeUsers
+import { io, activeUsers } from '../server.js'; 
 
-// Helper function to create and emit notification
 export const createNotification = async (userId, type, message, projectId = null, relatedUserId = null, collaborationId = null) => {
   try {
     const notification = new Notification({

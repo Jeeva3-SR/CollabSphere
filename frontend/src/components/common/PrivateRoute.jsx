@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import LoadingSpinner from './LoadingSpinner'; // This is now Bootstrap-styled
+import LoadingSpinner from './LoadingSpinner'; 
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -9,7 +9,7 @@ const PrivateRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100"> {/* min-vh-100 to take full viewport height */}
+      <div className="d-flex justify-content-center align-items-center min-vh-100"> 
         <LoadingSpinner size="lg" />
       </div>
     );

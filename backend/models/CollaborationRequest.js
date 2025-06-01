@@ -9,7 +9,6 @@ const CollaborationRequestSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-// Ensure a user can only request to join a project once if not already a member or pending
 CollaborationRequestSchema.index({ project: 1, requester: 1 }, { unique: true, partialFilterExpression: { status: 'Pending' } });
 
 

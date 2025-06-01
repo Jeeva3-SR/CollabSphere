@@ -5,8 +5,8 @@ const ChatMessageSchema = new mongoose.Schema({
   sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   text: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
-  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Optional: for read receipts
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] 
 });
-ChatMessageSchema.index({ chatRoomId: 1, timestamp: -1 }); // For efficient message fetching
+ChatMessageSchema.index({ chatRoomId: 1, timestamp: -1 }); 
 const ChatMessage = mongoose.model('ChatMessage', ChatMessageSchema);
 export default ChatMessage;

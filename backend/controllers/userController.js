@@ -1,28 +1,20 @@
-// backend/controllers/userController.js
 import User from '../models/User.js';
-import Project from '../models/Project.js'; // Needed for cleanup in deleteUserAccount
-import Notification from '../models/Notification.js'; // Needed for cleanup in deleteUserAccount
-import CollaborationRequest from '../models/CollaborationRequest.js'; // Needed for cleanup in deleteUserAccount
-import Invitation from '../models/Invitation.js'; // Needed for cleanup in deleteUserAccount
-// import ChatRoom from '../models/ChatRoom.js'; // Uncomment if you implement chat cleanup
-// import ChatMessage from '../models/ChatMessage.js'; // Uncomment if you implement chat cleanup
-
-import path from 'path'; // May not be strictly needed here if URLs are constructed fully on request
-import multer from 'multer'; // Only if handling specific MulterErrors here, usually route handles it
-
-// @desc    Get user profile by ID (publicly accessible for profiles)
-// @route   GET /api/users/:userId
-// @access  Public
+import Project from '../models/Project.js';
+import Notification from '../models/Notification.js';
+import CollaborationRequest from '../models/CollaborationRequest.js'; 
+import Invitation from '../models/Invitation.js'; 
+import path from 'path'; 
+import multer from 'multer';
 const getUserProfile = async (req, res) => {
   //console.log(`Attempting to get profile for userId: ${req.params.userId}`);
   try {
     const user = await User.findById(req.params.userId)
       .select('-password') // Exclude password from populated user data
-      .populate('createdProjects', 'title _id status isPublic') // Populate some project info
-      .populate('joinedProjects', 'title _id status isPublic');  // Populate some project info
+      .populate('createdProjects', 'title _id status isPublic') 
+      .populate('joinedProjects', 'title _id status isPublic');  
 
     if (!user) {
-     //
+    
       console.log(`User not found: ${req.params.userId}`);
       return res.status(404).json({ message: 'User not found' });
     }
@@ -37,11 +29,8 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Update logged-in user's profile (text fields, skills, links)
-// @route   PUT /api/users/profile
-// @access  Private
 const updateUserProfile = async (req, res) => {
-  const { name, bio, skills, githubLink, linkedinLink, avatar } = req.body; // Avatar URL can be updated here manually too
+  const { name, bio, skills, githubLink, linkedinLink, avatar } = req.body; 
   //console.log(`Attempting to update profile for user: ${req.user.id}`);
   //console.log('Received update data:', req.body);
 
@@ -50,26 +39,21 @@ const updateUserProfile = async (req, res) => {
 
     if (user) {
       user.name = name || user.name;
-      user.bio = bio !== undefined ? bio : user.bio; // Allow setting bio to empty string
+      user.bio = bio !== undefined ? bio : user.bio; 
       user.skills = skills || user.skills;
       user.githubLink = githubLink !== undefined ? githubLink : user.githubLink;
       user.linkedinLink = linkedinLink !== undefined ? linkedinLink : user.linkedinLink;
-      
-      // Only update avatar if a new URL is provided in this text update
-      // The dedicated picture upload route handles file uploads primarily.
+
       if (avatar) { 
         user.avatar = avatar;
       }
-
-      // Password change would be a separate, more secure flow
-      // if (req.body.password) { user.password = req.body.password; } // Requires rehashing
 
       const updatedUser = await user.save();
      // console.log(`Profile updated for user: ${updatedUser._id}`);
       res.json({ // Return a clean user object
         _id: updatedUser._id,
         name: updatedUser.name,
-        email: updatedUser.email, // Email typically not changeable this way
+        email: updatedUser.email,
         bio: updatedUser.bio,
         skills: updatedUser.skills,
         githubLink: updatedUser.githubLink,
@@ -89,13 +73,9 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Get all users (e.g., for search/invite functionality)
-// @route   GET /api/users
-// @access  Private (or Public with careful consideration for data exposure)
 const getAllUsers = async (req, res) => {
   //console.log("Attempting to get all users.");
   try {
-    // TODO: Implement pagination and search/filtering if needed for large user bases
     const users = await User.find({}).select('-password -createdProjects -joinedProjects'); // Exclude sensitive/large fields by default
     res.json(users);
   } catch (err) {
@@ -104,11 +84,8 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// @desc    Upload/Update user profile picture
-// @route   POST /api/users/profile/picture
-// @access  Private
 const uploadUserProfilePicture = async (req, res) => {
- //
+ 
  // console.log("BACKEND CONTROLLER: uploadUserProfilePicture hit.");
   //console.log("BACKEND CONTROLLER: req.file:", req.file);
   //console.log("BACKEND CONTROLLER: req.user:", req.user ? req.user.id : 'No user');
@@ -152,16 +129,14 @@ const uploadUserProfilePicture = async (req, res) => {
         }
         return res.status(400).json({ message: `File upload error: ${error.message}` });
     }
-    if (error.message && error.message.includes('Images Only')) { // Custom error from checkFileType
+    if (error.message && error.message.includes('Images Only')) {
         return res.status(400).json({ message: error.message });
     }
     res.status(500).json({ message: 'Server error during picture upload.' });
   }
 };
 
-// @desc    Delete user account (user deletes their own account)
-// @route   DELETE /api/users/profile
-// @access  Private
+
 const deleteUserAccount = async (req, res) => {
   const userIdToDelete = req.user.id;
  // console.log(`Attempting to delete account for user: ${userIdToDelete}`);
@@ -201,11 +176,6 @@ const deleteUserAccount = async (req, res) => {
     const notifDelUser = await Notification.deleteMany({ user: userIdToDelete });
     //console.log(`Deleted ${notifDelUser.deletedCount} notifications targeting the user.`);
     
-    // Optionally cleanup ChatRoom memberships if Chat feature is implemented
-    // await ChatRoom.updateMany(
-    //     { members: userIdToDelete },
-    //     { $pull: { members: userIdToDelete } }
-    // );
 
     //console.log(`Deleting user document for ${userIdToDelete}...`);
     await user.deleteOne();

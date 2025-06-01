@@ -1,4 +1,3 @@
-// src/pages/DashboardPage.jsx
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -10,40 +9,34 @@ import {
   getReceivedInvitations,
   respondToInvitation
 } from '../services/collaborationService';
-
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import RBButton from 'react-bootstrap/Button';
-
 import {
   BsArrowRepeat,
   BsSend,
   BsInbox,
   BsPeople,
-  BsFolder,
   BsCheckCircle,
   BsXCircle
 } from 'react-icons/bs';
-
 import ProjectCard from '../components/project/ProjectCard';
 
 const DashboardPage = () => {
   const { user } = useContext(AuthContext);
 
-  const [createdProjects, setCreatedProjects] = useState([]);
   const [joinedProjects, setJoinedProjects] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [receivedInvites, setReceivedInvites] = useState([]);
 
   const [loadingStates, setLoadingStates] = useState({
-    created: true, joined: true, sent: true, receivedReq: true, invites: true,
+    joined: true, sent: true, receivedReq: true, invites: true,
   });
 
   const [actionLoading, setActionLoading] = useState({});
@@ -55,9 +48,6 @@ const DashboardPage = () => {
       const data = await serviceCall();
       const result = process(data);
       switch (key) {
-        case 'created':
-          setCreatedProjects(result);
-          break;
         case 'joined':
           setJoinedProjects(result);
           break;
@@ -70,6 +60,8 @@ const DashboardPage = () => {
         case 'invites':
           setReceivedInvites(result.filter(inv => inv.status === 'Pending'));
           break;
+        default:
+          break;
       }
     } catch (error) {
       toast.error(`Failed to load ${key}.`);
@@ -80,7 +72,6 @@ const DashboardPage = () => {
   }, [user]);
 
   const fetchAll = useCallback(() => {
-    fetchSection('created', () => getProjects({ listType: 'myCreated' }));
     fetchSection('joined', () => getProjects({ listType: 'myJoined' }));
     fetchSection('sent', getSentCollaborationRequests);
     fetchSection('receivedReq', getReceivedCollaborationRequests);
@@ -157,7 +148,6 @@ const DashboardPage = () => {
  const renderSection = (title, key, items, type = 'project', emptyMessage) => (
   <Card className="mb-4 shadow-sm">
     <Card.Header as="h5" className="fw-bold d-flex">
-      {key === 'created' && <BsFolder size={20} className="me-2 text-primary" />}
       {key === 'joined' && <BsPeople size={20} className="me-2 text-info" />}
       {key === 'sent' && <BsSend size={20} className="me-2 text-primary" />}
       {key === 'receivedReq' && <BsInbox size={20} className="me-2 text-warning" />}

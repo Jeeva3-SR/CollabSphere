@@ -1,14 +1,14 @@
-// frontend/src/pages/ProjectDetailsPage.jsx
+
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { getProjectById, removeTeamMember } from '../services/projectService';
-import { sendCollaborationRequest, getSentCollaborationRequests } from '../services/collaborationService'; // Added getSentCollaborationRequests
+import { getProjectById, removeTeamMember, deleteProject } from '../services/projectService'; 
+import { sendCollaborationRequest, getSentCollaborationRequests } from '../services/collaborationService';
 import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import UserAvatar from '../components/user/UserAvatar';
 import SkillTag from '../components/project/SkillTag';
 import { toast } from 'react-toastify';
-
+import { skillOptions as allSkillOptions } from '../utils/constants';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -16,7 +16,7 @@ import Image from 'react-bootstrap/Image';
 import RBButton from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import Card from 'react-bootstrap/Card';
-
+import Modal from 'react-bootstrap/Modal'; 
 import { 
     ArrowLeft, 
     PencilSquare, 
@@ -24,7 +24,8 @@ import {
     ChatDotsFill, 
     BoxArrowInRight,
     BoxArrowLeft,
-    ClockHistory // Icon for pending request
+    ClockHistory,
+    Trash3Fill 
 } from 'react-bootstrap-icons';
 
 const ProjectDetailsPage = () => {
@@ -38,8 +39,11 @@ const ProjectDetailsPage = () => {
   const [error, setError] = useState(null);
   const [isRequestingJoin, setIsRequestingJoin] = useState(false);
   const [isLeavingProject, setIsLeavingProject] = useState(false);
+ 
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [hasPendingJoinRequest, setHasPendingJoinRequest] = useState(false);
-  const [checkingRequestStatus, setCheckingRequestStatus] = useState(false); // For loading state of pending request check
+  const [checkingRequestStatus, setCheckingRequestStatus] = useState(false);
 
   const fetchProjectDataAndStatus = useCallback(async () => {
     if (!projectIdFromParams) {
@@ -48,30 +52,30 @@ const ProjectDetailsPage = () => {
         return;
     }
     setPageLoading(true); 
-    setCheckingRequestStatus(true); // Start checking status
+    setCheckingRequestStatus(true); 
     setError(null); 
-    setHasPendingJoinRequest(false); // Reset pending status
+    setHasPendingJoinRequest(false); 
 
     try {
       const projectData = await getProjectById(projectIdFromParams);
       setProject(projectData);
 
-      // After fetching project, check if current user has a pending request for THIS project
-      if (currentUser && projectData) {
+      if (currentUser?._id && projectData) {
         try {
-            const sentRequests = await getSentCollaborationRequests(); // Fetch all sent requests by current user
+            const sentRequests = await getSentCollaborationRequests(); 
             const pendingRequestForThisProject = sentRequests.find(
                 req => 
                     (req.project?._id === projectData._id || req.project === projectData._id) && 
-                    req.status === 'Pending'
+                    req.status === 'Pending' &&
+                    req.requester === currentUser._id
             );
             setHasPendingJoinRequest(!!pendingRequestForThisProject);
-            //console.log("Pending request for this project:", !!pendingRequestForThisProject);
         } catch (reqError) {
-           // console.error("Failed to fetch sent requests status:", reqError);
-            // Don't block page load for this, assume no pending request if fetch fails
+            console.error("Failed to fetch sent requests status:", reqError);
             setHasPendingJoinRequest(false); 
         }
+      } else {
+        setHasPendingJoinRequest(false);
       }
     } catch (err) {
       const message = err.response?.data?.message || "Could not load project details.";
@@ -83,16 +87,13 @@ const ProjectDetailsPage = () => {
       setPageLoading(false);
       setCheckingRequestStatus(false);
     }
-  }, [projectIdFromParams, navigate, currentUser]); // currentUser is a dependency now
+  }, [projectIdFromParams, navigate, currentUser?._id]);
 
   useEffect(() => {
-    // Only fetch if auth is not loading AND either currentUser exists OR it's a public project view (where currentUser might be null)
-    // For checking pending requests, currentUser must exist.
     if (!authLoading) {
          fetchProjectDataAndStatus();
     }
-  }, [authLoading, currentUser, fetchProjectDataAndStatus]); // fetchProjectDataAndStatus is memoized
-
+  }, [authLoading, fetchProjectDataAndStatus]);
 
   const handleRequestToJoin = async () => {
     if (!currentUser) {
@@ -106,7 +107,7 @@ const ProjectDetailsPage = () => {
     try {
       await sendCollaborationRequest(project._id, { message: "I'd like to collaborate on this project!" });
       toast.success("Your request to join has been sent!");
-      setHasPendingJoinRequest(true); // Optimistically update UI
+      setHasPendingJoinRequest(true); 
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send join request. You may have already requested or are a member.");
     } finally {
@@ -116,12 +117,12 @@ const ProjectDetailsPage = () => {
 
   const handleLeaveProject = async () => {
     if (!project?._id || !currentUser?._id) return;
-    if (window.confirm("Are you sure you want to leave this project?")) {
+    if (window.confirm(`Are you sure you want to leave the project "${project.title}"?`)) {
       setIsLeavingProject(true);
       try {
         await removeTeamMember(project._id, currentUser._id); 
         toast.success("You have successfully left the project.");
-        navigate('/dashboard'); 
+        fetchProjectDataAndStatus(); 
       } catch (error) {
         toast.error(error.response?.data?.message || "Failed to leave project.");
       } finally {
@@ -129,18 +130,38 @@ const ProjectDetailsPage = () => {
       }
     }
   };
+
+
+  const handleDeleteProject = async () => {
+    if (!project?._id || !isOwner) return; 
+    
+    setIsDeletingProject(true);
+    try {
+        await deleteProject(project._id);
+        toast.success(`Project "${project.title}" has been deleted.`);
+        setShowDeleteConfirmModal(false);
+        navigate('/dashboard');
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to delete project.");
+        setIsDeletingProject(false); 
+    }
+  };
   
   const isOwner = currentUser && project && project.owner?._id === currentUser._id;
   const isMember = currentUser && project && project.teamMembers?.some(member => member._id === currentUser._id);
   const canAccessChat = currentUser && project && (isOwner || isMember);
-  const canRequest = currentUser && project && !isOwner && !isMember && !hasPendingJoinRequest; // Condition relies on hasPendingJoinRequest state
+  const canRequest = currentUser && project && !isOwner && !isMember && !hasPendingJoinRequest && !checkingRequestStatus;
   const canLeave = currentUser && project && isMember && !isOwner;
 
-  if (pageLoading || authLoading) return <div className="d-flex justify-content-center align-items-center" style={{minHeight: 'calc(100vh - 200px)'}}><LoadingSpinner size="lg" /></div>;
-  if (error && !project) return <div className="alert alert-danger text-center container mt-5">{error} <Link to="/projects">Go to Projects</Link></div>; // Show error only if project failed to load entirely
-  if (!project) return <div className="text-center py-5 container text-template-muted">Project not found or you do not have access.</div>; // Fallback if project is null after loading
+  const canDeleteProject = isOwner && project && project.teamMembers?.length === 1 && project.teamMembers[0]?._id === currentUser._id;
+  
 
-  const placeholderCover = "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=60";
+
+  if (pageLoading || authLoading) return <div className="d-flex justify-content-center align-items-center" style={{minHeight: 'calc(100vh - 200px)'}}><LoadingSpinner size="lg" /></div>;
+  if (error && !project) return <div className="alert alert-danger text-center container mt-5">{error} <Link to="/projects">Go to Projects</Link></div>;
+  if (!project) return <div className="text-center py-5 container text-template-muted">Project not found or you do not have access.</div>;
+
+  const placeholderCover = "/ProjectDetailsImage.avif";
 
   return (
     <Container fluid="lg" className="py-4 py-md-5 px-md-4">
@@ -159,6 +180,18 @@ const ProjectDetailsPage = () => {
                          <RBButton variant="outline-info" size="sm" as={Link} to={`/team/${project._id}`} className="d-flex align-items-center btn-h8">
                             <PeopleFill size={14} className="me-1"/> Manage Team
                         </RBButton>
+    
+                        {canDeleteProject && ( 
+                            <RBButton 
+                                variant="outline-danger" 
+                                size="sm" 
+                                onClick={() => setShowDeleteConfirmModal(true)} 
+                                className="d-flex align-items-center btn-h8"
+                                disabled={isDeletingProject}
+                            >
+                                <Trash3Fill size={14} className="me-1"/> Delete Project
+                            </RBButton>
+                        )}
                     </>
                 )}
                 {canAccessChat && (
@@ -172,15 +205,12 @@ const ProjectDetailsPage = () => {
             </Col>
         </Row>
         
-        <Image src={project.coverImage || placeholderCover} fluid className="rounded-xl mb-4 shadow-sm" style={{maxHeight: '450px', width: '100%', objectFit: 'cover'}} />
+        <Image src={placeholderCover} fluid className="rounded-xl mb-4 shadow-sm" style={{maxHeight: '450px', width: '100%', objectFit: 'cover'}} />
 
         <Row className="px-2 mb-4">
             <Col md={8}>
                 <h1 className="h1 text-template-dark fw-bolder mb-2">{project.title}</h1>
                 <div className="d-flex gap-2 mb-3 flex-wrap">
-                    <Badge pill bg={project.isPublic ? 'success-subtle' : 'danger-subtle'} text={project.isPublic ? 'success' : 'danger'} className="border border-opacity-50">
-                        {project.isPublic ? 'Public Project' : 'Private Project'}
-                    </Badge>
                     <Badge pill bg="info-subtle" text="info" className="border border-info-subtle border-opacity-50">
                         Status: {project.status}
                     </Badge>
@@ -193,13 +223,13 @@ const ProjectDetailsPage = () => {
                         variant="primary" size="lg"
                         className="btn-h12 fw-bold bg-template-accent text-template-dark border-0 w-100 w-md-auto"
                         onClick={handleRequestToJoin}
-                        disabled={isRequestingJoin || checkingRequestStatus} // Disable while checking status too
+                        disabled={isRequestingJoin || checkingRequestStatus}
                     >
-                        {isRequestingJoin ? <LoadingSpinner size="sm" /> : <BoxArrowInRight size={18} className="me-2"/>} 
-                        Request to Join
+                        {isRequestingJoin || checkingRequestStatus ? <LoadingSpinner size="sm" as="span" animation="border" className="me-2"/> : <BoxArrowInRight size={18} className="me-2"/>} 
+                        {checkingRequestStatus ? 'Checking Status...' : (isRequestingJoin ? 'Sending Request...' : 'Request to Join')}
                     </RBButton>
                 )}
-                {hasPendingJoinRequest && ( // If user has a pending request
+                {hasPendingJoinRequest && (
                     <RBButton variant="outline-secondary" size="lg" className="btn-h12 fw-bold w-100 w-md-auto" disabled>
                         <ClockHistory size={18} className="me-2"/> Join Request Pending
                     </RBButton>
@@ -210,14 +240,14 @@ const ProjectDetailsPage = () => {
                  {isOwner && (
                     <p className="text-info fw-semibold mt-2 mb-0 w-100 w-md-auto text-center text-md-end">You are the owner of this project.</p>
                 )}
-                {canLeave && ( // Leave button for members (not owners)
+                {canLeave && (
                      <RBButton
                         variant="outline-danger"
                         onClick={handleLeaveProject}
                         disabled={isLeavingProject}
-                        className="w-100 w-md-auto btn-h10 fw-medium mt-2" // Added mt-2 for spacing
+                        className="w-100 w-md-auto btn-h10 fw-medium mt-2"
                     >
-                        {isLeavingProject ? <LoadingSpinner size="sm" /> : <BoxArrowLeft size={18} className="me-2"/>} 
+                        {isLeavingProject ? <LoadingSpinner size="sm" as="span" animation="border" className="me-2"/> : <BoxArrowLeft size={18} className="me-2"/>} 
                         Leave Project
                     </RBButton>
                 )}
@@ -225,11 +255,14 @@ const ProjectDetailsPage = () => {
         </Row>
 
         <Row className="mt-2 px-2">
-            <Col md={12}> {/* Changed to full width for better layout on smaller screens before wrapping */}
+            <Col md={12}>
                 <h3 className="h5 text-template-dark fw-bold mb-2 pt-3">Required Skills</h3>
                 <div className="d-flex flex-wrap gap-2">
                 {(project.requiredSkills || []).length > 0 ? (
-                    project.requiredSkills.map((skill, index) => <SkillTag key={index} skill={skill} />)
+                    project.requiredSkills.map((skillValue, index) => {
+                        const skillLabel = allSkillOptions.find(s => s.value === skillValue)?.label || skillValue;
+                        return <SkillTag key={index} skill={skillLabel} />;
+                    })
                 ) : <p className="text-template-muted small">No specific skills listed.</p>}
                 </div>
             
@@ -268,6 +301,36 @@ const ProjectDetailsPage = () => {
                 ) : <p className="text-template-muted small">No other team members (besides the owner, if applicable).</p>}
             </Col>
         </Row>
+
+
+        <Modal show={showDeleteConfirmModal} onHide={() => {if(!isDeletingProject) setShowDeleteConfirmModal(false);}} centered backdrop="static">
+            <Modal.Header closeButton={!isDeletingProject}>
+                <Modal.Title className="h5 text-danger d-flex align-items-center">
+                    <Trash3Fill size={20} className="me-2"/> Confirm Project Deletion
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p>Are you absolutely sure you want to delete the project "<strong>{project.title}</strong>"?</p>
+                <p className="text-danger fw-bold">This action is irreversible and will permanently remove the project and all its associated data.</p>
+                
+                {isOwner && project.teamMembers && project.teamMembers.length > 1 && 
+                 !(project.teamMembers.length === 1 && project.teamMembers[0]?._id === currentUser?._id) &&
+                    (
+                    <p className="text-warning mt-2 small">
+                        <strong>Warning:</strong> This project has other members. Deleting it will remove their access and the project data for everyone involved.
+                    </p>
+                )}
+            </Modal.Body>
+            <Modal.Footer>
+                <RBButton variant="secondary" onClick={() => setShowDeleteConfirmModal(false)} disabled={isDeletingProject}>
+                    Cancel
+                </RBButton>
+                <RBButton variant="danger" onClick={handleDeleteProject} disabled={isDeletingProject}>
+                    {isDeletingProject ? <LoadingSpinner size="sm" as="span" animation="border" className="me-2"/> : null}
+                    Yes, Delete Project
+                </RBButton>
+            </Modal.Footer>
+        </Modal>
     </Container>
   );
 };

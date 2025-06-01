@@ -3,13 +3,8 @@ import Invitation from '../models/Invitation.js';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
-import { createNotification } from './notificationController.js'; // Assuming this helper exists
+import { createNotification } from './notificationController.js'; 
 
-// === Collaboration Requests ===
-
-// @desc    Request to join a project
-// @route   POST /api/collaborations/request/:projectId
-// @access  Private
 const sendCollaborationRequest = async (req, res) => {
   const { projectId } = req.params;
   const requesterId = req.user.id;
@@ -38,8 +33,6 @@ const sendCollaborationRequest = async (req, res) => {
       message
     });
     await newRequest.save();
-
-    // Notify project owner
     await createNotification(
       project.owner,
       'REQUEST_RECEIVED',
@@ -51,16 +44,13 @@ const sendCollaborationRequest = async (req, res) => {
     res.status(201).json(newRequest);
   } catch (error) {
     //console.error(error);
-    if (error.code === 11000) { // MongoServerError for unique index violation
+    if (error.code === 11000) { 
         return res.status(400).json({ message: 'A pending request to join this project already exists for you.' });
     }
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// @desc    Get pending requests for user's projects (user is owner)
-// @route   GET /api/collaborations/requests/received
-// @access  Private
 const getReceivedCollaborationRequests = async (req, res) => {
     try {
         const requests = await CollaborationRequest.find({ projectOwner: req.user.id, status: 'Pending' })
@@ -73,14 +63,12 @@ const getReceivedCollaborationRequests = async (req, res) => {
     }
 };
 
-// @desc    Get requests sent by the user
-// @route   GET /api/collaborations/requests/sent
-// @access  Private
+
 const getSentCollaborationRequests = async (req, res) => {
     try {
         const requests = await CollaborationRequest.find({ requester: req.user.id })
             .populate('project', 'title status')
-            .populate('projectOwner', 'name avatar'); // Populate project owner as well
+            .populate('projectOwner', 'name avatar'); 
         res.json(requests);
     } catch (error) {
         //console.error(error);
@@ -89,9 +77,7 @@ const getSentCollaborationRequests = async (req, res) => {
 };
 
 
-// @desc    Respond to a collaboration request (Accept/Reject)
-// @route   PUT /api/collaborations/request/:requestId/respond
-// @access  Private (Project Owner)
+
 const respondToCollaborationRequest = async (req, res) => {
   const { requestId } = req.params;
   const { status } = req.body; // 'Accepted' or 'Rejected'
@@ -105,7 +91,6 @@ const respondToCollaborationRequest = async (req, res) => {
     if (!request) return res.status(404).json({ message: 'Request not found' });
     if (request.status !== 'Pending') return res.status(400).json({ message: `Request already ${request.status.toLowerCase()}` });
 
-    // Authorization: Only project owner can respond
     if (request.projectOwner.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
@@ -118,10 +103,8 @@ const respondToCollaborationRequest = async (req, res) => {
       if (project && !project.teamMembers.includes(request.requester)) {
         project.teamMembers.push(request.requester);
         await project.save();
-        // Add project to user's joinedProjects
         await User.findByIdAndUpdate(request.requester, { $addToSet: { joinedProjects: project._id } });
 
-        // Notify requester
         await createNotification(
           request.requester,
           'REQUEST_ACCEPTED',
@@ -129,7 +112,6 @@ const respondToCollaborationRequest = async (req, res) => {
           project._id,
           req.user.id // The one who accepted
         );
-        // Notify other team members (optional)
          const requesterUser = await User.findById(request.requester).select('name');
          project.teamMembers.forEach(memberId => {
             if (memberId.toString() !== request.requester.toString() && memberId.toString() !== req.user.id.toString()) {
@@ -143,14 +125,14 @@ const respondToCollaborationRequest = async (req, res) => {
             }
         });
       }
-    } else { // Rejected
-        // Notify requester
+    } else { 
+     
         await createNotification(
             request.requester,
             'REQUEST_REJECTED',
             `Your request to join "${request.project.title}" has been rejected.`,
             request.project._id,
-            req.user.id // The one who rejected
+            req.user.id 
         );
     }
     
@@ -161,12 +143,6 @@ const respondToCollaborationRequest = async (req, res) => {
   }
 };
 
-
-// === Invitations ===
-
-// @desc    Invite a user to a project
-// @route   POST /api/collaborations/invite/:projectId/:userIdToInvite
-// @access  Private (Project Owner or authorized member)
 const sendInvitation = async (req, res) => {
   const { projectId, userIdToInvite } = req.params;
   const inviterId = req.user.id;
@@ -176,7 +152,6 @@ const sendInvitation = async (req, res) => {
     const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
-    // Authorization: For now, only project owner can invite
     if (project.owner.toString() !== inviterId) {
       return res.status(403).json({ message: 'Only project owner can send invites' });
     }
@@ -200,8 +175,6 @@ const sendInvitation = async (req, res) => {
       message
     });
     await newInvitation.save();
-
-    // Notify invitee
     await createNotification(
       userIdToInvite,
       'INVITE_RECEIVED',
@@ -213,16 +186,13 @@ const sendInvitation = async (req, res) => {
     res.status(201).json(newInvitation);
   } catch (error) {
     //console.error(error);
-     if (error.code === 11000) { // MongoServerError for unique index violation
+     if (error.code === 11000) { 
         return res.status(400).json({ message: 'An invitation to this project is already pending for this user.' });
     }
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// @desc    Get pending invitations received by the user
-// @route   GET /api/collaborations/invitations/received
-// @access  Private
 const getReceivedInvitations = async (req, res) => {
     try {
         const invitations = await Invitation.find({ invitee: req.user.id, status: 'Pending' })
@@ -235,12 +205,8 @@ const getReceivedInvitations = async (req, res) => {
     }
 };
 
-// @desc    Get invitations sent by the user (or for their projects)
-// @route   GET /api/collaborations/invitations/sent
-// @access  Private
 const getSentInvitations = async (req, res) => {
     try {
-        // Could also query for invitations where inviter is req.user.id OR project.owner is req.user.id
         const invitations = await Invitation.find({ inviter: req.user.id })
             .populate('project', 'title')
             .populate('invitee', 'name avatar email status');
@@ -252,12 +218,9 @@ const getSentInvitations = async (req, res) => {
 };
 
 
-// @desc    Respond to an invitation (Accept/Decline)
-// @route   PUT /api/collaborations/invitation/:invitationId/respond
-// @access  Private (Invitee)
 const respondToInvitation = async (req, res) => {
   const { invitationId } = req.params;
-  const { status } = req.body; // 'Accepted' or 'Declined'
+  const { status } = req.body; 
 
   if (!['Accepted', 'Declined'].includes(status)) {
     return res.status(400).json({ message: 'Invalid status' });
@@ -268,7 +231,6 @@ const respondToInvitation = async (req, res) => {
     if (!invitation) return res.status(404).json({ message: 'Invitation not found' });
     if (invitation.status !== 'Pending') return res.status(400).json({ message: `Invitation already ${invitation.status.toLowerCase()}` });
 
-    // Authorization: Only invitee can respond
     if (invitation.invitee.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
@@ -276,24 +238,21 @@ const respondToInvitation = async (req, res) => {
     invitation.status = status;
     await invitation.save();
     
-    const project = await Project.findById(invitation.project._id); // Re-fetch project to be safe
+    const project = await Project.findById(invitation.project._id);
 
     if (status === 'Accepted') {
       if (project && !project.teamMembers.includes(req.user.id)) {
         project.teamMembers.push(req.user.id);
         await project.save();
-        // Add project to user's joinedProjects
         await User.findByIdAndUpdate(req.user.id, { $addToSet: { joinedProjects: project._id } });
 
-        // Notify inviter (project owner)
         await createNotification(
           invitation.inviter,
           'INVITE_ACCEPTED',
           `${req.user.name} accepted your invitation to join "${project.title}".`,
           project._id,
-          req.user.id // The one who accepted
+          req.user.id 
         );
-        // Notify other team members (optional)
         project.teamMembers.forEach(memberId => {
             if (memberId.toString() !== req.user.id.toString() && memberId.toString() !== invitation.inviter.toString()) {
                  createNotification(
@@ -306,14 +265,13 @@ const respondToInvitation = async (req, res) => {
             }
         });
       }
-    } else { // Declined
-        // Notify inviter (project owner)
+    } else { 
         await createNotification(
             invitation.inviter,
             'INVITE_DECLINED',
             `${req.user.name} declined your invitation to join "${invitation.project.title}".`,
             invitation.project._id,
-            req.user.id // The one who declined
+            req.user.id 
         );
     }
 

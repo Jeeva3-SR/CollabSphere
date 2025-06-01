@@ -2,9 +2,6 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
 const registerUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -51,9 +48,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Auth user & get token (Login)
-// @route   POST /api/auth/login
-// @access  Public
 const loginUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -93,9 +87,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get logged in user data
-// @route   GET /api/auth/me
-// @access  Private
 const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');

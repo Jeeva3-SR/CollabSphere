@@ -5,8 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #ffffff; /* bg-white from template */
-  color: #212529; /* Bootstrap default text color, or #121416 if you prefer */
+  background-color: #ffffff; 
+  color: #212529; 
 }
 
 code {
@@ -14,53 +14,38 @@ code {
     monospace;
 }
 
-/*
-  The template used specific hex colors like #121416 for text and #6a7681 for secondary text.
-  Bootstrap's defaults are slightly different. If precise color matching is critical,
-  you might need to override Bootstrap variables (if using SASS) or add utility classes.
-  For simplicity, I'll mostly use Bootstrap's `text-dark`, `text-muted`, etc.
-*/
-
-/* Ensure Inter and Noto Sans are primary fonts */
-.group-design-root, body { /* Applied to a common root element */
-  font-family: 'Inter', "Noto Sans", sans-serif !important; /* !important to override Bootstrap's default font stack if needed */
+.group-design-root, body { 
+  font-family: 'Inter', "Noto Sans", sans-serif !important; 
 }
 
-/* Specific color mapping if Bootstrap defaults are not close enough */
 .text-template-dark { color: #121416; }
 .text-template-muted { color: #6a7681; }
-.bg-template-accent { background-color: #dce8f3; } /* Example: bg-[#dce8f3] */
-.bg-template-light-gray { background-color: #f1f2f4; } /* Example: bg-[#f1f2f4] */
-
-/* Style for react-toastify (keep as is) */
-/*.Toastify__toast-container {}*/
+.bg-template-accent { background-color: #dce8f3; } 
+.bg-template-light-gray { background-color: #f1f2f4; } 
 .Toastify__toast { border-radius: 0.5rem; }
-.Toastify__toast--success { background-color: #198754 !important; color: white !important; } /* Bootstrap success green */
-.Toastify__toast--error { background-color: #dc3545 !important; color: white !important; } /* Bootstrap danger red */
+.Toastify__toast--success { background-color: #198754 !important; color: white !important; } 
+.Toastify__toast--error { background-color: #dc3545 !important; color: white !important; } 
 .Toastify__progress-bar { background: rgba(255, 255, 255, 0.7) !important; }
 
-/* Helper for rounded-xl, Bootstrap uses .rounded-3 for large radius */
+
 .rounded-xl {
-  border-radius: 0.75rem !important; /* approx. from Tailwind */
+  border-radius: 0.75rem !important;
 }
 
-/* For the specific input height h-14 (56px) from template, Bootstrap's default is smaller */
 .form-control-h14 {
   min-height: 56px;
-  padding-top: 0.75rem; /* Adjust padding for height */
+  padding-top: 0.75rem; 
   padding-bottom: 0.75rem;
 }
 
-/* For the button height h-10 (40px) and h-12 (48px) */
 .btn-h10 {
   min-height: 40px;
-  line-height: calc(40px - 2 * 0.375rem - 2px); /* Adjust line-height for vertical centering in buttons */
+  line-height: calc(40px - 2 * 0.375rem - 2px);
 }
 .btn-h12 {
   min-height: 48px;
   line-height: calc(48px - 2 * 0.5rem - 2px);
 }
-
 
 .hover-shadow-md:hover {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
@@ -69,7 +54,6 @@ code {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-   /* number of lines to show */
   -webkit-box-orient: vertical;
 }
 .hover-underline:hover {
@@ -85,235 +69,174 @@ code {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-/* Custom class for specific button height if needed */
+
 .btn-h8 {
-  min-height: 32px; /* Approx h-8 */
+  min-height: 32px; 
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
-  line-height: 1.5; /* Adjust for vertical centering */
+  line-height: 1.5; 
 }
-.text-purple { color: purple !important; } /* For icon example */
+.text-purple { color: purple !important; }
 .hover-underline:hover { text-decoration: underline !important; }
 
 
-.hover-bg-light-darken:hover { background-color: #e9ecef !important; /* darker shade of Bootstrap's bg-light */ }
+.hover-bg-light-darken:hover { background-color: #e9ecef !important;}
 .hover-shadow:hover { box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important; }
-
-
 
 .border-dashed {
   border-style: dashed !important;
 }
 
-
 .react-select-option-hover:hover {
-  background-color: #e9ecef; /* Bootstrap bg-light */
+  background-color: #e9ecef; 
 }
 .group:hover .group-hover-text-primary {
-  color: var(--bs-primary) !important; /* Use Bootstrap primary color */
+  color: var(--bs-primary) !important;
 }
-.btn-h14 { /* For react-select and button height match */
+.btn-h14 { 
     min-height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-
-/* For ProjectCard alignment and consistent look */
 .text-truncate-2-lines {
   display: -webkit-box;
-
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* Consider adding a min-height if content can be less than 2 lines */
-  /* min-height: 2.4em; /* Adjust based on your line-height */
 }
 
 .text-truncate-3-lines {
   display: -webkit-box;
- 
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* min-height: 3.6em; /* Adjust based on your line-height */
 }
 
 .hover-shadow-md:hover {
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1) !important; /* Softer shadow */
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1) !important; 
 }
 
 .transition-shadow {
   transition: box-shadow 0.2s ease-in-out;
 }
 
-/* Ensure consistent button height if using custom btn-h8 */
 .btn-h8 {
-  min-height: 31px; /* Bootstrap's btn-sm height */
+  min-height: 31px; 
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   line-height: 1.5;
-  display: inline-flex; /* Important for icon alignment */
+  display: inline-flex; 
   align-items: center;
   justify-content: center;
 }
-.btn-h10 { /* As used in some other places */
+.btn-h10 { 
   min-height: 38px;
-   /* ... other styles if needed ... */
 }
 
-
-/* In frontend/src/index.css */
-
-body {
-  font-family: 'Inter', "Noto Sans", sans-serif !important;
-  /* ... other body styles */
-}
-
-/* Template Specific Colors (if not using Bootstrap theme colors directly) */
 .text-template-dark { color: #121416 !important; }
 .text-template-muted { color: #6a7681 !important; }
 .bg-template-accent { background-color: #dce8f3 !important; }
 .bg-template-light-gray { background-color: #f1f2f4 !important; }
 
-/* Custom Heights for Form Controls / Buttons (if Bootstrap defaults aren't exact enough) */
 .form-control-h14 {
-  min-height: 56px !important; /* h-14 */
+  min-height: 56px !important; 
   padding-top: 0.75rem !important;
   padding-bottom: 0.75rem !important;
 }
 .btn-h10 {
-  min-height: 40px !important; /* h-10 */
-  line-height: calc(40px - (2 * 0.375em) - 2px) !important; /* Adjust based on padding */
+  min-height: 40px !important;
+  line-height: calc(40px - (2 * 0.375em) - 2px) !important; 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 .btn-h12 {
-  min-height: 48px !important; /* h-12 */
-  line-height: calc(48px - (2 * 0.5em) - 2px) !important; /* Adjust based on padding */
+  min-height: 48px !important; 
+  line-height: calc(48px - (2 * 0.5em) - 2px) !important; 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Custom Border Radius (if Bootstrap's .rounded-3 isn't quite .rounded-xl) */
 .rounded-xl {
   border-radius: 0.75rem !important;
 }
 
-/* For react-select global overrides if not using the `styles` prop exclusively */
-/* This is an alternative to some of the inline styles in the `Select` component above */
-/*
-.multi-select-container .react-select__control {
-  min-height: 56px;
-  border-color: #ced4da;
-  border-radius: 0.75rem;
-  box-shadow: none !important;
-}
-.multi-select-container .react-select__control--is-focused {
-  border-color: #86b7fe !important;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-}
-.multi-select-container .react-select__placeholder {
-  color: #6a7681;
-  padding-left: 8px;
-}
-.multi-select-container .react-select__value-container {
-  padding: 2px 8px;
-}
-.multi-select-container .react-select__multi-value {
-  background-color: #e2e8f0;
-  border-radius: 0.25rem;
-}
-.multi-select-container .react-select__multi-value__label {
-  color: #121416;
-  font-size: 0.875rem;
-  padding: 3px 3px 3px 6px;
-}
-.multi-select-container .react-select__multi-value__remove {
-  color: #6a7681;
-}
-.multi-select-container .react-select__multi-value__remove:hover {
-  background-color: #dc3545;
-  color: white;
-}
-.multi-select-container .react-select__menu {
-  z-index: 9999 !important; // Important for modals
-  border-radius: 0.375rem;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-.multi-select-container .react-select__option {
-  background-color: white;
-  color: #212529;
-}
-.multi-select-container .react-select__option--is-selected {
-  background-color: #0d6efd !important;
-  color: white !important;
-}
-.multi-select-container .react-select__option--is-focused {
-  background-color: #e9ecef !important;
-  color: #212529 !important;
-}
-*/
-
-/* General cursor pointer for clickable elements */
-.cursor-pointer {
-  cursor: pointer;
-}
-
-/* Hover opacity for remove icons if used */
-.opacity-75 { opacity: 0.75; }
-.hover-opacity-100:hover { opacity: 1 !important; }
-
-/* Styles for Skill Badges on Register Page (if not handled by Badge component directly) */
-/* Example:
-.skill-badge-display {
-  background-color: var(--bs-primary-bg-subtle) !important;
-  color: var(--bs-primary-text-emphasis) !important;
-  border: 1px solid var(--bs-primary-border-subtle) !important;
-  padding: 0.3em 0.6em !important;
-}
-*/
-
-
-/* frontend/src/index.css */
-
-/* ... other styles ... */
-
-.avatar-dropdown .nav-link { /* Targets the main toggle area */
-  padding: 0 !important; /* Remove default padding around the avatar if it's causing issues */
+.avatar-dropdown .nav-link { 
+  padding: 0 !important; 
   display: flex;
   align-items: center;
 }
 
-.avatar-dropdown .dropdown-toggle { /* Targets the toggle button itself */
+.avatar-dropdown .dropdown-toggle { 
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem; /* Adjust padding as needed */
-  background-color: transparent !important; /* Make toggle background transparent */
-  border: none !important; /* Remove border */
-  box-shadow: none !important; /* Remove shadow */
+  padding: 0.25rem 0.5rem; 
+  background-color: transparent !important; 
+  border: none !important; 
+  box-shadow: none !important; 
 }
 
-.avatar-dropdown .dropdown-toggle::after { /* Targets the caret symbol */
-  margin-left: 0.4em !important; /* Adjust space between avatar and caret */
-  vertical-align: middle; /* Align caret vertically with the avatar center */
-  border-top-color: #6a7681 !important; /* Match text-template-muted color */
-  /* You can make it smaller if needed: */
-  /* border-top-width: 0.25em; */
-  /* border-right-width: 0.25em; */
-  /* border-left-width: 0.25em; */
+.avatar-dropdown .dropdown-toggle::after { 
+  margin-left: 0.4em !important; 
+  vertical-align: middle; 
+  border-top-color: #6a7681 !important; 
 }
 
-/* Optional: Style when dropdown is open */
-
-
-/* Ensure the dropdown menu itself has appropriate styling */
 .avatar-dropdown .dropdown-menu {
-  border-radius: 0.5rem; /* Softer corners */
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Standard Bootstrap shadow */
-  border: 1px solid #dee2e6; /* Softer border */
-  margin-top: 0.25rem !important; /* Add a little space between toggle and menu */
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
+  border: 1px solid #dee2e6;
+  margin-top: 0.25rem !important;
 }
+
+.btn-skill-pill {
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-skill-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-skill-pill.active {
+  font-weight: 500;
+}
+
+.bg-light-subtle { 
+    background-color: #f8f9fa !important; 
+}
+.logo-spin {
+  transition: transform 0.6s ease-in-out;
+}
+.logo-spin:hover {
+  transform: rotate(360deg);
+}
+.navbar-brand h2 {
+  color: #121416 !important; 
+}
+.nav-link.text-template-dark {
+  color: #121416 !important; 
+}
+.nav-link.text-template-dark:hover, .nav-link.text-template-dark:focus {
+  color: #0d6efd !important; 
+}
+.user-dropdown .dropdown-menu { 
+    min-width: auto;
+}
+.user-dropdown .dropdown-toggle::after { 
+    display: none;
+}
+.btn-h10 {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bg-template-light-gray { background-color: #f1f2f4 !important; }
+.bg-template-accent { background-color: #dce8f3 !important; }
+.text-template-dark { color: #121416 !important; }
+.text-template-muted { color: #6a7681 !important; }

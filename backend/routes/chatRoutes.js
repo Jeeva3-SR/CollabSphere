@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { getChatRoomForProject, getMessagesForChatRoom, postMessage } from '../controllers/chatController.js'; // New controller
+import { getChatRoomForProject, getMessagesForChatRoom, postMessage } from '../controllers/chatController.js'; 
 
 const router = express.Router();
 router.get('/room/:projectId', protect, getChatRoomForProject);

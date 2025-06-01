@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, {useState,useEffect,useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { getNotifications } from '../../services/notificationService';
@@ -9,6 +9,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import AnimatedLogo from './AnimatedLogo';
 import {
   BellIcon,
   MagnifyingGlassIcon,
@@ -50,19 +51,26 @@ const NavbarComponent = () => {
     toast.success('Logged out successfully!');
   };
 
-  const Logo = () => (
-    <Link
-      to={user ? '/dashboard' : '/'}
-      className="navbar-brand d-flex align-items-center gap-2 text-decoration-none text-template-dark"
+const Logo = ({ user }) => (
+  <Link
+    to={user ? "/dashboard" : "/"}
+    className="navbar-brand d-flex align-items-center gap-2 text-decoration-none"
+  >
+    <AnimatedLogo />
+    <h2
+      className="h5 fw-bold mb-0"
+      style={{
+        letterSpacing: "-0.015em",
+        background:
+          "linear-gradient(90deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+      }}
     >
-      <div style={{ width: '1rem', height: '1rem' }}>
-        {/* Logo SVG omitted for brevity */}
-      </div>
-      <h2 className="h5 fw-bold mb-0" style={{ letterSpacing: '-0.015em' }}>
-        CollabSphere
-      </h2>
-    </Link>
-  );
+      CollabSphere
+    </h2>
+  </Link>
+);
 
   return (
     <Navbar bg="white" expand="lg" className="border-bottom py-3 sticky-top shadow-sm">

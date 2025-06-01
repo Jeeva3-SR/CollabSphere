@@ -23,17 +23,16 @@ router.post(
     ],
     createProject
 );
-router.get('/',protect, getProjects); // Can be public for feed, or protect for user-specific queries
-router.get('/:id', protect,getProjectById); // Access control within controller
-router.put('/:id', protect, updateProject); // Owner only - checked in controller
-router.delete('/:id', protect, deleteProject); // Owner only - checked in controller
+router.get('/',protect, getProjects); 
+router.get('/:id', protect,getProjectById); 
+router.put('/:id', protect, updateProject);
+router.delete('/:id', protect, deleteProject); 
 
-// Team Management specific to a project
-router.post('/:projectId/team', protect, addTeamMember); // Owner only (simplified for now)
+router.post('/:projectId/team', protect, addTeamMember); 
 router.delete(
-    '/:projectId/team/:memberIdToRemove', // <<< CRITICAL: Path with parameters
-    protect,                              // <<< User must be authenticated
-    removeTeamMember                      // <<< Controller function to handle it
-); // Owner or self
+    '/:projectId/team/:memberIdToRemove', 
+    protect,                           
+    removeTeamMember                     
+);
 
 export default router;
