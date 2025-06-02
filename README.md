@@ -162,10 +162,10 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
 * git clone https://github.com/yourusername/CollabSphere.git
 * cd collabsphere/backend
 * Update your .env with actual values:
-   -PORT=5001
-   -MONGO_URI=mongodb://localhost:27017/
-   -JWT_SECRET=your_secure_jwt_secret
-   -FRONTEND_URL=http://localhost:3000
+   - PORT=5001
+   - MONGO_URI=mongodb://localhost:27017/
+   - JWT_SECRET=your_secure_jwt_secret
+   - FRONTEND_URL=http://localhost:3000
 * Install Dependencies:
    - npm install
 * Run the Development Server:
