@@ -1,6 +1,5 @@
 # 🌐 CollabSphere – Open Project Collaboration Platform
 
-**Typing Animation: Peer-to-peer project creation. Real-time collaboration. Skill-driven networking.**
 
 ---
 
@@ -67,14 +66,17 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
 📍 Landing Page
 
 * Introduction to the platform, how it works, and a call-to-action to log in or register.
+---
 
 📝 Register Page
 
 * Allows new users to create an account by entering their profile details such as name, bio, skills, and social links.
+---
 
 🔐 Login Page
 
 * Secure login form for existing users using email and password authentication.
+---
 
 🧭 Dashboard
 
@@ -83,10 +85,12 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
   -Projects you've joined
   -Collaboration requests you've sent or received
   -Invitations awaiting your response
+---
 
 🌍 Project Feed
 
 * Explore all public projects, filter by required skills or tech stacks, and find relevant collaboration opportunities.
+---
 
 🔍 Project Details Page
 
@@ -95,14 +99,17 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
  -Required skills
  -Owner information
  -Option to request to join
+---
 
 🛠️ Create Project Page
 
 * Form-based interface to launch a new project by providing title, description, and skills needed.
+---
 
 ✏️ Edit Project Page
 
 * Modify the details of a project you own, including its status (Open, In Progress, Completed).
+---
 
 👤 User Profile Page
 
@@ -112,6 +119,7 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
   -Social links
   -Projects created and joined
   -Option to invite them to collaborate.
+---
 
 🔔 Notifications Page
 
@@ -123,6 +131,7 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
   
 * Group Chat Notifications
    -where we find our notifications
+---
 
 👥 Team Management Page
 
@@ -130,6 +139,7 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
  -View current collaborators
  -Invite new users
  -Remove members if needed
+---
 
 ❌ 404 Page
 
