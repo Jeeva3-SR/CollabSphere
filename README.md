@@ -130,7 +130,7 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
   -Team member activity
   
 * Group Chat Notifications
-   -where we find our notifications
+   - where we find our Unread notifications
 ---
 
 👥 Team Management Page
