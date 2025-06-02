@@ -114,31 +114,31 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
 👤 User Profile Page
 
 * View another user's profile including their:
-  -Bio
-  -Skills
-  -Social links
-  -Projects created and joined
-  -Option to invite them to collaborate.
+  - Bio
+  - Skills
+  - Social links (GitHub and LinkedIn)
+  - Projects created and joined
+  - Option to invite them to collaborate.
 ---
 
 🔔 Notifications Page
 
 * Centralized place to manage:
-  -Incoming join requests
-  -Collaboration invitations
-  -Accepted/declined updates
-  -Team member activity
+  - Incoming join requests
+  - Collaboration invitations
+  - Accepted/declined updates
+  - Team member activity
   
 * Group Chat Notifications
-   - where we find our Unread notifications
+   - Where we find our Unread notifications
 ---
 
 👥 Team Management Page
 
 * Manage your project's team members:
- -View current collaborators
- -Invite new users
- -Remove members if needed
+ - View current collaborators
+ - Invite new users
+ - Remove members if needed
 ---
 
 ❌ 404 Page
