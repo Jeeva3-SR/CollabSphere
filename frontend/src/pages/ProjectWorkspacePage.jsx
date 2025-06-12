@@ -1,16 +1,16 @@
-// src/pages/ProjectWorkspacePage.js
+
 import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Button, Alert, Row, Col, Card as BootstrapCard, ListGroup, Modal, Form } from 'react-bootstrap'; // Alert might still be used for general errors
+import { Container, Button, Alert, Row, Col, Card as BootstrapCard, Modal, Form } from 'react-bootstrap'; // Alert might still be used for general errors
 import { toast } from 'react-toastify';
 import { ArrowClockwise as RefreshIcon } from 'react-bootstrap-icons'; // Removed BellFill
-
+import { ArrowLeft } from 'react-bootstrap-icons';
 import { 
     getTasksForProject, 
     updateTask as apiUpdateTask, 
     createTask as apiCreateTask,
     deleteTask as apiDeleteTask,
-    submitTaskForReview as apiSubmitTaskForReview,  // Ensured these are consistently named
+    submitTaskForReview as apiSubmitTaskForReview, 
     approveReviewedTask as apiApproveReviewedTask, 
     rejectReviewedTask as apiRejectReviewedTask   
 } from '../services/taskService';
@@ -34,15 +34,8 @@ export const WORKFLOW_STATUSES = {
     DUE_SOON: 'due_soon'
 };
 
-const initialColumnsData = () => { /* ... same ... */ 
-    const data = {};
-    OWNER_COLUMN_ORDER.forEach(status => {
-        data[String(status)] = { id: String(status), title: String(status), tasks: [] };
-    });
-    return JSON.parse(JSON.stringify(data));
-};
 
-// No mock APIs needed here anymore if taskService.js is complete
+
 
 const ProjectWorkspacePage = () => {
   const { id: projectId } = useParams();
@@ -309,11 +302,6 @@ const ProjectWorkspacePage = () => {
     return currentColumnOrder.map(statusId => cols[String(statusId)] || { id: String(statusId), title: String(statusId), tasks: [] });
   }, [allTasks, isProjectOwner, currentUser?._id, currentColumnOrder]);
   
-  // tasksPendingOwnerReviewList is no longer needed as a separate state.
-  // The notification box will derive from allTasks directly.
-  const tasksForOwnerNotification = useMemo(() => 
-    isProjectOwner ? allTasks.filter(t => t.workflowStatus === WORKFLOW_STATUSES.SUBMITTED_FOR_REVIEW && t.status === OWNER_COLUMN_ORDER[2]) : [],
-  [allTasks, isProjectOwner]);
 
 
   if (loading && !project && !isRefreshing) return <div className="d-flex vh-100 justify-content-center align-items-center"><LoadingSpinner size="lg" /></div>;
@@ -325,7 +313,7 @@ const ProjectWorkspacePage = () => {
       <header className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom bg-white p-3 rounded shadow-sm">
         <div>
             <h1 className="h4 mb-1 text-primary fw-bold">{project?.title || 'Loading...'} - Workspace</h1>
-            <Link to={`/projects/${projectId}`} className="text-secondary small"><i className="fas fa-arrow-left me-1"></i> Back</Link>
+            <Link to={`/projects/${projectId}`} className="text-secondary small text-decoration-none"><i className="fas fa-arrow-left me-1"></i> <ArrowLeft size={18} className="me-2" /> Back</Link>
         </div>
         <div className="d-flex align-items-center">
             <Button variant="outline-secondary" size="sm" onClick={() => fetchWorkspaceData(true)} disabled={isRefreshing || loading} className="me-2 shadow-sm">

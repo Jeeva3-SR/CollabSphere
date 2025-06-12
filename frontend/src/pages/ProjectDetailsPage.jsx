@@ -183,8 +183,8 @@ const ProjectDetailsPage = () => {
     <Container fluid="lg" className="py-4 py-md-5 px-md-3">
         <Row className="mb-3 align-items-center">
             <Col>
-                <Link to="/projects" className="d-flex align-items-center text-secondary text-decoration-none small">
-                    <ArrowLeft size={18} className="me-2" /> Back to Projects
+                <Link to="/dashboard" className="d-flex align-items-center text-secondary text-decoration-none small">
+                    <ArrowLeft size={18} className="me-2" /> Back to Dashboard
                 </Link>
             </Col>
             <Col xs="auto" className="d-flex flex-wrap gap-2 justify-content-end">

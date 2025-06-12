@@ -1,7 +1,5 @@
 import Project from '../models/Project.js';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
-import { createNotification } from './notificationController.js';
 import ChatRoom from '../models/ChatRoom.js';
 import CollaborationRequest from '../models/CollaborationRequest.js';
 import Invitation from '../models/Invitation.js';
@@ -20,32 +18,31 @@ const createProject = async (req, res) => {
 
     const project = await newProject.save();
     const newChatRoom = new ChatRoom({
-        projectId: project._id,
-        name: `${project.title} Chat`,
-        members: [req.user.id]
+      projectId: project._id,
+      name: `${project.title} Chat`,
+      members: [req.user.id],
     });
     await newChatRoom.save();
-    await User.findByIdAndUpdate(req.user.id, { $push: { createdProjects: project._id, joinedProjects: project._id } });
+
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { createdProjects: project._id, joinedProjects: project._id },
+    });
 
     res.status(201).json(project);
   } catch (err) {
-    //console.error("Error in createProject:", err.message);
     res.status(500).send('Server error');
   }
 };
 
 const getProjects = async (req, res) => {
   const loggedInUserId = req.user?._id;
-  // *** CORRECTED ***: Changed 'userIdForFilter' to 'userId' to match the frontend request.
   const { skill, search, page = 1, limit = 10, listType, userId } = req.query;
 
   let query = {};
 
   if (listType === 'explore') {
     query.isPublic = true;
-    if (loggedInUserId) {
-      query.owner = { $ne: loggedInUserId };
-    }
+    if (loggedInUserId) query.owner = { $ne: loggedInUserId };
   } else if (listType === 'myCreated' && loggedInUserId) {
     query.owner = loggedInUserId;
   } else if (listType === 'myJoined' && loggedInUserId) {
@@ -53,22 +50,16 @@ const getProjects = async (req, res) => {
     query.owner = { $ne: loggedInUserId };
   } else if (listType === 'allMyProjects' && loggedInUserId) {
     query.owner = loggedInUserId;
-  } else if (listType === 'userCreated' && userId) { // *** MODIFIED ***: Correctly handles the request from the ProfilePage.
+  } else if (listType === 'userCreated' && userId) {
     query.owner = userId;
-    // *** ENHANCEMENT ***: If the logged-in user is viewing their own profile, show their private projects.
-    // Otherwise, only show public projects.
     if (!loggedInUserId || loggedInUserId.toString() !== userId.toString()) {
-        query.isPublic = true;
+      query.isPublic = true;
     }
   } else {
-    // Default behavior for unauthenticated users or no specific listType
     query.isPublic = true;
-    if (loggedInUserId) {
-      query.owner = { $ne: loggedInUserId };
-    }
+    if (loggedInUserId) query.owner = { $ne: loggedInUserId };
   }
 
-  // Apply skill and search filters to relevant list types
   if (listType === 'explore' || listType === 'userCreated' || (!listType && query.isPublic)) {
     if (skill) {
       query.requiredSkills = { $in: [new RegExp(`^${skill.trim()}$`, 'i')] };
@@ -90,13 +81,12 @@ const getProjects = async (req, res) => {
     const totalProjects = await Project.countDocuments(query);
 
     res.json({
-        projects,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalProjects / parseInt(limit)),
-        totalProjects
+      projects,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalProjects / parseInt(limit)),
+      totalProjects,
     });
   } catch (err) {
-    //console.error("Error in getProjects controller:", err.message);
     res.status(500).send('Server error');
   }
 };
@@ -112,20 +102,22 @@ const getProjectById = async (req, res) => {
     }
 
     if (!project.isPublic) {
-        if (!req.user) {
-            return res.status(403).json({ message: 'Access denied. This is a private project and you are not logged in.' });
-        }
-        const isOwner = project.owner && project.owner._id.toString() === req.user.id;
-        const isMember = project.teamMembers.some(member => member && member._id.toString() === req.user.id);
-        if (!isOwner && !isMember) {
-            return res.status(403).json({ message: 'Access denied for this private project.' });
-        }
+      if (!req.user) {
+        return res.status(403).json({ message: 'Access denied. This is a private project.' });
+      }
+      const isOwner = project.owner && project.owner._id.toString() === req.user.id;
+      const isMember = project.teamMembers.some(
+        (member) => member && member._id.toString() === req.user.id
+      );
+      if (!isOwner && !isMember) {
+        return res.status(403).json({ message: 'Access denied for this private project.' });
+      }
     }
 
     res.json(project);
   } catch (err) {
     if (err.kind === 'ObjectId' || err.name === 'CastError') {
-        return res.status(404).json({ message: 'Project not found (invalid ID format).' });
+      return res.status(404).json({ message: 'Project not found (invalid ID format).' });
     }
     res.status(500).send('Server error');
   }
@@ -164,159 +156,98 @@ const deleteProject = async (req, res) => {
     }
 
     if (project.owner.toString() !== req.user.id) {
-      return res.status(401).json({ message: 'User not authorized to delete this project' });
+      return res.status(401).json({ message: 'Not authorized to delete this project' });
     }
 
-    // Clean up related data
     await User.updateMany(
-        { $or: [{ createdProjects: project._id }, { joinedProjects: project._id }] },
-        { $pull: { createdProjects: project._id, joinedProjects: project._id } }
+      { $or: [{ createdProjects: project._id }, { joinedProjects: project._id }] },
+      { $pull: { createdProjects: project._id, joinedProjects: project._id } }
     );
     await CollaborationRequest.deleteMany({ project: project._id });
     await Invitation.deleteMany({ project: project._id });
-    await Notification.deleteMany({ projectId: project._id });
     await ChatRoom.deleteOne({ projectId: project._id });
 
-    // *** CORRECTED ***: Removed erroneous commented-out console logs that referenced undefined variables.
-
-    // Finally, delete the project itself
     await project.deleteOne();
 
     res.json({ message: 'Project removed successfully' });
-
   } catch (err) {
-    //console.error('CRITICAL ERROR in deleteProject controller', err);
     res.status(500).send('Server error during project deletion');
   }
 };
 
-
 const addTeamMember = async (req, res) => {
-    const { userId } = req.body;
-    const { projectId } = req.params;
+  const { userId } = req.body;
+  const { projectId } = req.params;
 
-    try {
-        const project = await Project.findById(projectId);
-        if (!project) return res.status(404).json({ message: 'Project not found' });
+  try {
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
 
-        if (project.owner.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to add members directly to this project' });
-        }
-
-        const userToAdd = await User.findById(userId);
-        if (!userToAdd) return res.status(404).json({ message: 'User to add not found' });
-
-        if (project.teamMembers.map(id => id.toString()).includes(userId)) {
-            return res.status(400).json({ message: 'User is already in the team' });
-        }
-
-        project.teamMembers.push(userId);
-        await project.save();
-
-        await User.findByIdAndUpdate(userId, { $addToSet: { joinedProjects: project._id } });
-
-        await ChatRoom.findOneAndUpdate(
-            { projectId: project._id },
-            { $addToSet: { members: userId } }
-        );
-
-        const notificationMsg = `${userToAdd.name} has been added to the project: ${project.title}`;
-        project.teamMembers.forEach(memberId => {
-            if (memberId.toString() !== userId && memberId.toString() !== req.user.id) {
-                 createNotification(
-                    memberId,
-                    'TEAM_MEMBER_JOINED',
-                    notificationMsg,
-                    project._id,
-                    userId
-                );
-            }
-        });
-        await createNotification(
-            userId,
-            'ADDED_TO_PROJECT',
-            `You have been added to the project: ${project.title} by ${req.user.name || 'the project owner'}.`,
-            project._id,
-            req.user.id
-        );
-
-        res.json(project.teamMembers);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+    if (project.owner.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to add members directly to this project' });
     }
+
+    const userToAdd = await User.findById(userId);
+    if (!userToAdd) return res.status(404).json({ message: 'User to add not found' });
+
+    if (project.teamMembers.map((id) => id.toString()).includes(userId)) {
+      return res.status(400).json({ message: 'User is already in the team' });
+    }
+
+    project.teamMembers.push(userId);
+    await project.save();
+
+    await User.findByIdAndUpdate(userId, { $addToSet: { joinedProjects: project._id } });
+
+    await ChatRoom.findOneAndUpdate(
+      { projectId: project._id },
+      { $addToSet: { members: userId } }
+    );
+
+    res.json(project.teamMembers);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const removeTeamMember = async (req, res) => {
-    const { projectId, memberIdToRemove } = req.params;
-    const loggedInUserId = req.user.id;
+  const { projectId, memberIdToRemove } = req.params;
+  const loggedInUserId = req.user.id;
 
-    try {
-        const project = await Project.findById(projectId);
-        if (!project) {
-            return res.status(404).json({ message: 'Project not found' });
-        }
+  try {
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
 
-        const userToRemove = await User.findById(memberIdToRemove);
-        if (!userToRemove) {
-            return res.status(404).json({ message: 'Member to remove not found in system' });
-        }
+    const userToRemove = await User.findById(memberIdToRemove);
+    if (!userToRemove) return res.status(404).json({ message: 'Member to remove not found' });
 
-        const isOwner = project.owner.toString() === loggedInUserId;
-        const isRemovingSelf = memberIdToRemove === loggedInUserId;
+    const isOwner = project.owner.toString() === loggedInUserId;
+    const isRemovingSelf = memberIdToRemove === loggedInUserId;
 
-        if (!project.teamMembers.map(id => id.toString()).includes(memberIdToRemove)) {
-            return res.status(404).json({ message: 'Member not found in this project\'s team' });
-        }
-
-        if (isOwner) {
-            if (isRemovingSelf) {
-                 if (project.teamMembers.length === 1 && project.owner.toString() === memberIdToRemove) {
-                    return res.status(400).json({ message: 'Owner cannot be removed if they are the last member. Consider deleting the project.' });
-                 }
-            }
-        } else if (isRemovingSelf) {
-            // Member removing self is allowed
-        } else {
-            return res.status(403).json({ message: 'Not authorized. Only the project owner can remove other members.' });
-        }
-
-        project.teamMembers = project.teamMembers.filter(id => id.toString() !== memberIdToRemove);
-        await project.save();
-
-        await User.findByIdAndUpdate(memberIdToRemove, { $pull: { joinedProjects: project._id } });
-
-        await ChatRoom.findOneAndUpdate(
-            { projectId: project._id },
-            { $pull: { members: memberIdToRemove } }
-        );
-
-        const actorName = req.user.name || 'The project owner';
-        const removedUserName = userToRemove.name;
-
-        if (isRemovingSelf) {
-            const notificationMsg = `${removedUserName} has left the project: ${project.title}`;
-            if (project.owner.toString() !== memberIdToRemove) {
-                await createNotification(project.owner.toString(), 'TEAM_MEMBER_LEFT', notificationMsg, project._id, memberIdToRemove);
-            }
-            project.teamMembers.forEach(async (member_id) => {
-                if (member_id.toString() !== project.owner.toString()) {
-                    await createNotification(member_id.toString(), 'TEAM_MEMBER_LEFT', notificationMsg, project._id, memberIdToRemove);
-                }
-            });
-        } else if (isOwner) {
-            const notificationMsgForRemoved = `You have been removed from the project: ${project.title} by ${actorName}.`;
-            await createNotification(memberIdToRemove, 'REMOVED_FROM_PROJECT', notificationMsgForRemoved, project._id, loggedInUserId);
-
-            const notificationMsgForTeam = `${removedUserName} was removed from the project: ${project.title} by ${actorName}.`;
-            project.teamMembers.forEach(async (member_id) => {
-                await createNotification(member_id.toString(), 'TEAM_MEMBER_REMOVED', notificationMsgForTeam, project._id, memberIdToRemove);
-            });
-        }
-
-        res.json({ message: 'Member removed successfully.', teamMembers: project.teamMembers });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error while removing member' });
+    if (!project.teamMembers.map((id) => id.toString()).includes(memberIdToRemove)) {
+      return res.status(404).json({ message: 'Member not in project' });
     }
+
+    if (isOwner && isRemovingSelf && project.teamMembers.length === 1) {
+      return res.status(400).json({ message: 'Owner cannot be removed if they are the last member' });
+    } else if (!isOwner && !isRemovingSelf) {
+      return res.status(403).json({ message: 'Not authorized to remove this member' });
+    }
+
+    project.teamMembers = project.teamMembers.filter((id) => id.toString() !== memberIdToRemove);
+    await project.save();
+
+    await User.findByIdAndUpdate(memberIdToRemove, { $pull: { joinedProjects: project._id } });
+
+    await ChatRoom.findOneAndUpdate(
+      { projectId: project._id },
+      { $pull: { members: memberIdToRemove } }
+    );
+
+    res.json({ message: 'Member removed successfully.', teamMembers: project.teamMembers });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error while removing member' });
+  }
 };
 
 export {

@@ -11,10 +11,8 @@ import projectRoutes from './routes/projectRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import collaborationRoutes from './routes/collaborationRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 
-import { handleSocketConnection } from './controllers/notificationController.js';
 
 // --- Basic Setup ---
 dotenv.config();
@@ -32,7 +30,6 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/notifications', notificationRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/chat', chatRoutes);
 
@@ -80,7 +77,7 @@ io.on('connection', (socket) => {
   });
 
   // Pass socket to notification handler for real-time notifications
-  handleSocketConnection(io, socket);
+ // handleSocketConnection(io, socket);
 
   // Handle user disconnection
   socket.on('disconnect', () => {

@@ -1,7 +1,6 @@
-import React, {useState,useEffect,useContext } from 'react';
+import React, {useState,useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { getNotifications } from '../../services/notificationService';
 import { toast } from 'react-toastify';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
@@ -21,22 +20,7 @@ const NavbarComponent = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      if (user) {
-        try {
-          const notifications = await getNotifications();
-          const unread = notifications.filter((n) => !n.isRead).length;
-          setUnreadNotifications(unread);
-        } catch (error) {
-          console.error('Failed to fetch notifications count', error);
-        }
-      }
-    };
-    fetchUnreadCount();
-  }, [user]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -129,12 +113,7 @@ const Logo = ({ user }) => (
                   className="position-relative bg-template-light-gray text-template-dark p-2 rounded-3 border-0 btn-h10"
                 >
                   <BellIcon style={{ width: '20px', height: '20px' }} />
-                  {unreadNotifications > 0 && (
-                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      {unreadNotifications}
-                      <span className="visually-hidden">unread notifications</span>
-                    </span>
-                  )}
+                  
                 </Button>
 
                 <NavDropdown

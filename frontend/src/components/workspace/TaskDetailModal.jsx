@@ -1,5 +1,5 @@
 // src/components/workspace/TaskDetailModal.js
-import React, { useState, useEffect,useMemo} from 'react';
+import React, { useState, useEffect} from 'react';
 import { Modal, Button, Form, Row, Col, Alert, Badge as BootstrapBadge } from 'react-bootstrap';
 import { updateTask as apiUpdateTask } from '../../services/taskService';
 import { toast } from 'react-toastify';
