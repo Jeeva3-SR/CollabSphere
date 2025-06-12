@@ -240,3 +240,42 @@ code {
 .bg-template-accent { background-color: #dce8f3 !important; }
 .text-template-dark { color: #121416 !important; }
 .text-template-muted { color: #6a7681 !important; }
+
+
+
+
+/* === FINAL WORKSPACE STYLES - BUILT FOR A PREMIUM UI === */
+:root {
+  --workspace-bg: #f8f9fc; /* A brighter, cleaner background */
+  --column-bg: #f1f2f6;   /* A very subtle contrast for columns */
+  --surface-color: #ffffff;
+  --border-color: #dee2e6;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+}
+
+.workspace-page {
+  background-color: var(--workspace-bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kanban-board-container {
+  flex-grow: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem 2rem;
+}
+
+.kanban-board {
+  display: flex;
+  gap: 1.5rem;
+  min-height: 100%;
+}
+
+/* Modern, subtle scrollbar */
+.kanban-board-container::-webkit-scrollbar { height: 12px; }
+.kanban-board-container::-webkit-scrollbar-track { background-color: #e4e4e4; border-radius: 100px; }
+.kanban-board-container::-webkit-scrollbar-thumb { background-color: #b0b0b0; border-radius: 100px; }

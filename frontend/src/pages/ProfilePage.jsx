@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { useParams,useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { 
-    getUserProfileById, 
+import {
+    getUserProfileById,
     updateUserProfile as updateUserService,
     deleteAccount as deleteUserService
 } from '../services/userService';
-import { getProjects } from '../services/projectService';
+import { getProjects } from '../services/projectService'; // This service needs to handle the filtering correctly
 import { sendInvitation } from '../services/collaborationService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import UserAvatar from '../components/user/UserAvatar';
@@ -20,44 +20,44 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
-import RBButton from 'react-bootstrap/Button'; 
+import RBButton from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import Input from '../components/common/Input'; 
-import TextArea from '../components/common/TextArea'; 
-import SkillSelectionModal from '../components/common/SkillSelectionModal'; 
-import { Badge
-   } from 'react-bootstrap';
-import { 
-    BriefcaseFill, 
-   TagFill,
+import Input from '../components/common/Input';
+import TextArea from '../components/common/TextArea';
+import SkillSelectionModal from '../components/common/SkillSelectionModal';
+import { Badge } from 'react-bootstrap';
+import {
+    BriefcaseFill,
+    TagFill,
     XCircleFill,
-    PencilFill, 
-    EnvelopeFill, 
-    Github, 
-    Linkedin, 
-    TrashFill, 
+    PencilFill,
+    EnvelopeFill,
+    Github,
+    Linkedin,
+    TrashFill,
     ShieldLockFill,
-    Folder2Open as CreatedProjectsIcon
+    Folder2Open as CreatedProjectsIcon,
+    ArrowLeft // *** NEW: IMPORTED ICON ***
 } from 'react-bootstrap-icons';
 
-import { skillOptions as allSkillOptions } from '../utils/constants'; 
+import { skillOptions as allSkillOptions } from '../utils/constants';
 
 const ProfilePage = () => {
-  const { userId } = useParams();
+  const { userId } = useParams(); // This is the ID of the profile being viewed
   const { user: currentUser, updateUserContext, logout, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [profileUser, setProfileUser] = useState(null);
-  const [userProjects, setUserProjects] = useState({ created: []});
+  const [userProjects, setUserProjects] = useState({ created: [] });
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
       name: '', bio: '', githubLink: '', linkedinLink: ''
   });
-  const [editFormSkills, setEditFormSkills] = useState([]); 
+  const [editFormSkills, setEditFormSkills] = useState([]);
   const [editFormLoading, setEditFormLoading] = useState(false);
 
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -75,23 +75,23 @@ const ProfilePage = () => {
   const initializeEditForm = useCallback((userToEdit) => {
     if (userToEdit) {
         setEditFormData({
-            name: userToEdit.name || '', 
+            name: userToEdit.name || '',
             bio: userToEdit.bio || '',
-            githubLink: userToEdit.githubLink || '', 
+            githubLink: userToEdit.githubLink || '',
             linkedinLink: userToEdit.linkedinLink || ''
         });
         setEditFormSkills(
-            (userToEdit.skills || []).map(skillValue => 
+            (userToEdit.skills || []).map(skillValue =>
                 allSkillOptions.find(opt => opt.value === skillValue) || { value: skillValue, label: skillValue }
             ).filter(Boolean)
         );
     }
-  }, []); 
+  }, []);
 
   const fetchProfileAndProjects = useCallback(async () => {
     if (!userId) {
         toast.error("User ID is missing.");
-        navigate("/404", {replace: true}); 
+        navigate("/404", {replace: true});
         return;
     }
     setPageLoading(true); setError(null);
@@ -99,39 +99,43 @@ const ProfilePage = () => {
       const profileData = await getUserProfileById(userId);
       setProfileUser(profileData);
 
-      if (currentUser && profileData._id === currentUser._id) {
+      if (currentUser && profileData && profileData._id === currentUser._id) {
         initializeEditForm(profileData);
       }
       
-      const targetUserIdForProjectLists = userId;
-         const [createdRes] = await Promise.all([
-        getProjects({ listType: 'myCreated', userIdForFilter: targetUserIdForProjectLists, limit: 6 })
-      ]);
-      setUserProjects({ 
+      const createdRes = await getProjects({ listType: 'userCreated', userId: userId, limit: 6 });
+
+      setUserProjects({
           created: createdRes.projects || []
       });
+
     } catch (err) {
+      console.error("[ProfilePage] Error in fetchProfileAndProjects:", err.response || err);
       const message = err.response?.data?.message || "Could not load profile data.";
       setError(message); toast.error(message);
-      if(err.response?.status === 404) navigate("/404", { replace: true });
+      if(err.response?.status === 404) {
+        navigate("/404", { replace: true });
+      }
     } finally {
       setPageLoading(false);
     }
   }, [userId, currentUser, navigate, initializeEditForm]);
-  
+
   useEffect(() => {
-    if (!authLoading) { 
-        fetchProfileAndProjects();
+    if (!authLoading) {
+        if (userId) {
+            fetchProfileAndProjects();
+        }
     }
-  }, [authLoading, fetchProfileAndProjects]);
+  }, [authLoading, fetchProfileAndProjects, userId]);
 
   useEffect(() => {
     const fetchOwnedProjectsForInvite = async () => {
-        if (currentUser && !isOwnProfile && profileUser) { 
+        if (currentUser && !isOwnProfile && profileUser) {
             try {
-                const res = await getProjects({ createdBy: currentUser._id });
+                const res = await getProjects({ listType: 'myCreated', limit: 100 });
                 setCurrentUserOwnedProjects(res.projects || []);
-            } catch (error) { console.error("Failed to fetch current user's owned projects for invite:", error); }
+            } catch (error) { console.error("[ProfilePage] Failed to fetch current user's owned projects for invite:", error); }
         }
     };
     if (!authLoading && currentUser) {
@@ -140,7 +144,7 @@ const ProfilePage = () => {
   }, [currentUser, isOwnProfile, profileUser, authLoading]);
 
   const handleEditChange = (e) => setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
-  
+
   const handleUserSkillsUpdateFromModal = (skillsFromModal) => {
     setEditFormSkills(skillsFromModal);
   };
@@ -154,20 +158,22 @@ const ProfilePage = () => {
     setEditFormLoading(true);
     const skillsValueArray = editFormSkills.map(s => s.value);
     try {
-      const dataToUpdate = { ...editFormData, skills: skillsValueArray }; 
+      const dataToUpdate = { ...editFormData, skills: skillsValueArray };
       const updatedUser = await updateUserService(dataToUpdate);
-      
-      setProfileUser(updatedUser); 
-      updateUserContext(updatedUser); 
+
+      setProfileUser(updatedUser);
+      if (isOwnProfile) {
+          updateUserContext(updatedUser);
+      }
       toast.success("Profile updated successfully!");
-      setIsEditing(false); 
+      setIsEditing(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update profile.");
     } finally {
       setEditFormLoading(false);
     }
   };
-  
+
   const handleInviteToProject = async () => {
     if (!selectedProjectToInvite) { toast.error("Please select a project."); return; }
     setIsInviting(true);
@@ -196,8 +202,8 @@ const ProfilePage = () => {
         await deleteUserService({ password: deletePassword });
         toast.success("Account deleted successfully. You will be logged out.");
         setShowDeleteAccountModal(false);
-        logout(); 
-        navigate('/'); 
+        logout();
+        navigate('/');
     } catch (error) {
         const message = error.response?.data?.message || "Failed to delete account. Please check your password.";
         setDeleteAccountError(message);
@@ -213,7 +219,7 @@ const ProfilePage = () => {
         initializeEditForm(profileUser);
     }
   };
-  
+
   const [showUserSkillEditModal, setShowUserSkillEditModal] = useState(false);
 
 
@@ -223,6 +229,19 @@ const ProfilePage = () => {
 
   return (
     <Container fluid="lg" className="py-4 py-md-5 px-md-4">
+      
+      {/* *** NEW: BACK TO DASHBOARD BUTTON *** */}
+      {currentUser && (
+        <RBButton
+          variant="link"
+          onClick={() => navigate('/dashboard')}
+          className="text-decoration-none text-template-muted fw-bold mb-3 d-flex align-items-center p-0"
+        >
+          <ArrowLeft size={18} className="me-2" />
+          Back to Dashboard
+        </RBButton>
+      )}
+
       <Card className="shadow-lg border-light">
         <Card.Body className="p-4 p-sm-5">
           <Row className="align-items-center align-items-sm-start pb-4 mb-4 border-bottom">
@@ -232,30 +251,29 @@ const ProfilePage = () => {
             <Col className="text-center text-sm-start">
               <h1 className="h2 text-template-dark fw-bolder mb-1">{isEditing && isOwnProfile ? editFormData.name : profileUser.name}</h1>
               <p className="text-template-muted mb-2">{profileUser.email}</p>
-              { (isEditing && isOwnProfile ? editFormData.bio : profileUser.bio) && 
+              { (isEditing && isOwnProfile ? editFormData.bio : profileUser.bio) &&
                 <p className="text-template-dark small mb-2">{isEditing && isOwnProfile ? editFormData.bio : profileUser.bio}</p>
               }
               <div className="d-flex flex-wrap justify-content-center justify-content-sm-start gap-3 small">
-                {(isEditing && isOwnProfile ? editFormData.githubLink : profileUser.githubLink) && ( 
-                    <a href={isEditing && isOwnProfile ? editFormData.githubLink : profileUser.githubLink} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none d-flex align-items-center"> <Github size={16} className="me-1" /> GitHub </a> 
+                {(isEditing && isOwnProfile ? editFormData.githubLink : profileUser.githubLink) && (
+                    <a href={isEditing && isOwnProfile ? editFormData.githubLink : profileUser.githubLink} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none d-flex align-items-center"> <Github size={16} className="me-1" /> GitHub </a>
                 )}
-                {(isEditing && isOwnProfile ? editFormData.linkedinLink : profileUser.linkedinLink) && ( 
-                    <a href={isEditing && isOwnProfile ? editFormData.linkedinLink : profileUser.linkedinLink} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none d-flex align-items-center"> <Linkedin size={16} className="me-1" /> LinkedIn </a> 
+                {(isEditing && isOwnProfile ? editFormData.linkedinLink : profileUser.linkedinLink) && (
+                    <a href={isEditing && isOwnProfile ? editFormData.linkedinLink : profileUser.linkedinLink} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none d-flex align-items-center"> <Linkedin size={16} className="me-1" /> LinkedIn </a>
                 )}
               </div>
             </Col>
             <Col xs={12} sm="auto" className="mt-3 mt-sm-0 text-center text-sm-end">
               {isOwnProfile ? (
-                <RBButton 
-                  onClick={() => { 
-                    const newEditingState = !isEditing;
-                    setIsEditing(newEditingState); 
-                    if (newEditingState && profileUser) { 
-                        initializeEditForm(profileUser);
-                    } else if (!newEditingState && profileUser) { 
+                <RBButton
+                  onClick={() => {
+                    if (isEditing) {
+                        handleCancelEdit();
+                    } else {
+                        setIsEditing(true);
                         initializeEditForm(profileUser);
                     }
-                  }} 
+                  }}
                   variant="outline-secondary" size="sm" className="btn-h8"
                 > <PencilFill size={14} className="me-1"/> {isEditing ? 'Cancel Edit' : 'Edit Profile'} </RBButton>
               ) : ( currentUser && ( <RBButton onClick={() => setShowInviteModal(true)} variant="primary" size="sm" className="btn-h8 bg-template-accent text-template-dark fw-bold border-0"> <EnvelopeFill size={14} className="me-1" /> Invite to Project </RBButton> )
@@ -273,24 +291,24 @@ const ProfilePage = () => {
                   <Input label="GitHub Link" name="githubLink" value={editFormData.githubLink} onChange={handleEditChange} placeholder="https://github.com/yourusername" className="mb-3"/>
                   <Input label="LinkedIn Link" name="linkedinLink" value={editFormData.linkedinLink} onChange={handleEditChange} placeholder="https://linkedin.com/in/yourprofile" className="mb-3"/>
 
-                  
+
                   <Form.Group className="mb-3">
                     <Form.Label className="text-template-dark fw-medium d-block mb-1">Your Skills</Form.Label>
-                    <div 
-                      className="p-2 border rounded-xl form-control d-flex align-content-start flex-wrap gap-1 mb-2" 
+                    <div
+                      className="p-2 border rounded-xl form-control d-flex align-content-start flex-wrap gap-1 mb-2"
                       style={{ minHeight: '56px', overflowY: 'auto', cursor: 'default' }}
                       onClick={() => setShowUserSkillEditModal(true)}
                       title="Click to Add/Edit Your Skills"
                     >
                       {editFormSkills.length > 0 ? editFormSkills.map(skill => (
-                        <Badge 
-                          key={`edit-form-${skill.value}`} 
-                          pill bg="primary-subtle" text="primary-emphasis" 
+                        <Badge
+                          key={`edit-form-${skill.value}`}
+                          pill bg="primary-subtle" text="primary-emphasis"
                           className="d-flex align-items-center p-2 border border-primary-subtle me-1 mb-1"
                         >
                           <TagFill size={12} className="me-1"/> {skill.label}
-                          <XCircleFill 
-                            size={16} className="ms-1 cursor-pointer opacity-75 hover-opacity-100" 
+                          <XCircleFill
+                            size={16} className="ms-1 cursor-pointer opacity-75 hover-opacity-100"
                             onClick={(e) => { e.stopPropagation(); removeSkillFromEditForm(skill.value);}}
                             style={{cursor: 'pointer'}} title={`Remove ${skill.label}`}
                           />
@@ -299,10 +317,10 @@ const ProfilePage = () => {
                         <span className="text-template-muted small align-self-center">No skills selected. Click below to add.</span>
                       )}
                     </div>
-                    <RBButton 
-                      type="button" 
-                      variant="outline-secondary" 
-                      onClick={() => setShowUserSkillEditModal(true)} 
+                    <RBButton
+                      type="button"
+                      variant="outline-secondary"
+                      onClick={() => setShowUserSkillEditModal(true)}
                       className="w-100 btn-h10 d-flex align-items-center justify-content-center"
                     >
                        <PlusCircleIcon style={{ width: '20px', height: '20px' }} className="me-1 me-sm-2" /> Add/Edit Your Skills
@@ -328,11 +346,11 @@ const ProfilePage = () => {
                     <BriefcaseFill size={18} className="me-2 text-primary"/> Skills
                 </h3>
                 <div className="d-flex flex-wrap gap-2">
-                  {(profileUser.skills || []).length > 0 ? 
+                  {(profileUser.skills || []).length > 0 ?
                     profileUser.skills.map(skillValue => {
                         const skillLabel = allSkillOptions.find(s=>s.value === skillValue)?.label || skillValue;
                         return <SkillTag key={skillValue} skill={skillLabel} />;
-                    }) 
+                    })
                     : <p className="text-template-muted small">No skills listed.</p>}
                 </div>
               </div>
@@ -345,22 +363,22 @@ const ProfilePage = () => {
                   <Row xs={1} sm={2} lg={3} className="g-3">
                     {userProjects.created.map(p => <Col key={p._id} className="d-flex align-items-stretch"><ProjectCard project={p} /></Col>)}
                   </Row>
-                ) : <p className="text-template-muted small">No projects created by this user.</p>}
+                ) : <p className="text-template-muted small">This user has not created any projects yet.</p>}
               </div>
-            
+
             </>
           )}
-          
-          {isOwnProfile && !isEditing && ( 
-            <Card className="mt-5 border-danger shadow-sm"> 
-              <Card.Header className="bg-danger-subtle text-danger-emphasis fw-bold">Danger Zone</Card.Header> 
-              <Card.Body className="text-center"> 
-                <Card.Text className="text-danger mb-3 small"> Deleting your account is permanent and will remove all your data. This action cannot be undone. </Card.Text> 
-                <RBButton variant="danger" onClick={handleDeleteAccountAttempt} disabled={isDeletingAccount}> 
-                  <TrashFill size={16} className="me-1"/> {isDeletingAccount ? 'Processing...' : 'Delete My Account'} 
-                </RBButton> 
-              </Card.Body> 
-            </Card> 
+
+          {isOwnProfile && !isEditing && (
+            <Card className="mt-5 border-danger shadow-sm">
+              <Card.Header className="bg-danger-subtle text-danger-emphasis fw-bold">Danger Zone</Card.Header>
+              <Card.Body className="text-center">
+                <Card.Text className="text-danger mb-3 small"> Deleting your account is permanent and will remove all your data. This action cannot be undone. </Card.Text>
+                <RBButton variant="danger" onClick={handleDeleteAccountAttempt} disabled={isDeletingAccount}>
+                  <TrashFill size={16} className="me-1"/> {isDeletingAccount ? 'Processing...' : 'Delete My Account'}
+                </RBButton>
+              </Card.Body>
+            </Card>
           )}
         </Card.Body>
       </Card>
@@ -385,7 +403,7 @@ const ProfilePage = () => {
           </RBButton>
         </Modal.Footer>
       </Modal>
-      
+
       <Modal show={showDeleteAccountModal} onHide={() => setShowDeleteAccountModal(false)} centered backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title className="h5 text-danger d-flex align-items-center"><ShieldLockFill size={20} className="me-2"/>Confirm Account Deletion</Modal.Title>
@@ -415,8 +433,8 @@ const ProfilePage = () => {
       <SkillSelectionModal
         show={showUserSkillEditModal}
         handleClose={() => setShowUserSkillEditModal(false)}
-        onSkillsConfirm={handleUserSkillsUpdateFromModal} 
-        initialSelectedSkills={editFormSkills} 
+        onSkillsConfirm={handleUserSkillsUpdateFromModal}
+        initialSelectedSkills={editFormSkills}
         allSkillOptions={allSkillOptions}
       />
     </Container>

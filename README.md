@@ -21,8 +21,7 @@ Built using the **MERN stack** with real-time features and clean UI, CollabSpher
 ### 📝 Project Creation & Management
 * Create  projects
 * Edit details like title, description, and required skills
-* Delete Project
-* Team Management  
+* Delete Project  
 
 ### 🔍 Project Discovery & Filters
 * Explore public projects via the **Project Feed**

@@ -20,7 +20,7 @@ import { AuthContext } from './context/AuthContext';
 import { SocketContext } from './context/SocketContext';
 import { toast } from 'react-toastify';
 import MyProjectsPage from './pages/MyProjectsPage.jsx';
-
+import ProjectWorkspacePage from './pages/ProjectWorkspacePage';
 
 function App() {
   const location = useLocation();
@@ -67,7 +67,7 @@ useEffect(() => {
           <Route path="/profile/:userId" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
           <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
           <Route path="/team/:projectId" element={<PrivateRoute><TeamManagementPage /></PrivateRoute>} />
-          
+          <Route path="/project/:id/workspace" element={<PrivateRoute><ProjectWorkspacePage /></PrivateRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
